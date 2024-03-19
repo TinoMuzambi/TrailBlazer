@@ -1,7 +1,31 @@
-library(tidyverse)
+# app.R
+library(shiny)
+library(shinydashboard)
 
-dat <- list.files("data/", "*.csv", full.names = T) %>% 
-  read_csv(., id = "run") %>% 
-  mutate(run = dense_rank(run))
+ui <- dashboardPage(
+  dashboardHeader(),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Home", tabName = "home"),
+      menuItem("Runs", tabName = "runs")
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "home",
+        includeHTML("www/index.html")
+      ),
+      tabItem(
+        tabName = "runs",
+        includeHTML("www/runs.html")
+      )
+    )
+  )
+)
 
-head(dat)
+server <- function(input, output, session) {
+  # Server logic goes here
+}
+
+shinyApp(ui, server)
