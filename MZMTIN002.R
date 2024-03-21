@@ -1,10 +1,19 @@
 library(shiny)
-library(shinythemes)
 library(tidyverse)
+library(leaflet)
+library(plotly)
+library(shinydashboard)
+
+dat <- list.files("data/", "*.csv", full.names = T) %>%
+  read_csv(., id = "run") %>%
+  mutate(run = dense_rank(run))
+
+run_list <- dat %>%
+  distinct(run, .keep_all = TRUE) %>%
+  pull(run)
 
 ui <- dashboardPage(
-  theme = shinytheme("flatly"),
-  titlePanel("Runner"),
+  dashboardHeader(title = "Runner"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home"),
@@ -33,24 +42,51 @@ a {
     tabItems(
       tabItem(
         tabName = "home",
-        h1("Home")
-        #includeHTML("www/index.html")
+        selectInput("run_selector",
+                    label = "Select Run:",
+                    choices = run_list,
+                    selected = 1
+                    ),
+        
+        leafletOutput("run_map"),
+        
+        plotlyOutput("run_dist")
       ),
       tabItem(
         tabName = "runs",
         fluidPage(
-          h1("Runsss")
+          
         )
-        #includeHTML("www/runs.html")
       )
     )
   )
 )
 
 server <- function(input, output, session) {
-  dat <- list.files("data/", "*.csv", full.names = T) %>% 
-    read_csv(., id = "run") %>% 
-    mutate(run = dense_rank(run))
+  # Filter data for the selected run
+  run_data_filtered <- reactive({
+    dat %>%
+      filter(run == as.numeric(input$run_selector))
+  }) 
+  
+  
+  output$run_map <- renderLeaflet({
+    # Get coordinates for the run
+    lat <- run_data_filtered()$lat
+    lng <- run_data_filtered()$lng
+    
+    # Create a leaflet map
+    leaflet() %>%
+      setView(lng = mean(lng), lat = mean(lat), zoom = 12) %>%
+      addTiles() %>% # Add base map tiles
+      addPolylines(lng = lng, lat = lat, data = run_data_filtered(), color = "blue") # Plot run path
+  })
+  
+  output$run_dist <- renderPlotly({
+    p <- ggplot(dat, aes(run)) +
+      geom_histogram()
+    p
+  })
 }
 
 shinyApp(ui, server)
