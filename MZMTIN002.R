@@ -1,10 +1,10 @@
-# app.R
 library(shiny)
-library(semantic.dashboard)
+library(shinythemes)
 library(tidyverse)
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Runner"),
+  theme = shinytheme("flatly"),
+  titlePanel("Runner"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home"),
@@ -12,6 +12,24 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
+    tags$head(
+      tags$style(
+        "
+body, .tab-content, .dashboard-sidebar {
+  background-color: rgb(22, 22, 22) !important;
+  color: white !important;
+}
+
+a {
+  color: white !important;
+}
+
+.ui.segment {
+  border: none !important;
+}
+"
+      )
+    ),
     tabItems(
       tabItem(
         tabName = "home",
