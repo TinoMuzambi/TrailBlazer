@@ -2,7 +2,8 @@ library(shiny)
 library(tidyverse)
 library(leaflet)
 library(plotly)
-library(shinydashboard)
+library(semantic.dashboard)
+library(shinycssloaders)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>%
   read_csv(., id = "run") %>%
@@ -24,12 +25,12 @@ ui <- dashboardPage(
     tags$head(
       tags$style(
         "
-body, .tab-content, .dashboard-sidebar {
+body, .tab-content, .dashboard-sidebar, .dashboard-header {
   background-color: rgb(22, 22, 22) !important;
   color: white !important;
 }
 
-a {
+a, .dashboard-title {
   color: white !important;
 }
 
@@ -42,25 +43,44 @@ a {
     tabItems(
       tabItem(
         tabName = "home",
-        selectInput("run_selector",
-                    label = "Select Run:",
-                    choices = run_list,
-                    selected = 1
-                    ),
-        
-        leafletOutput("run_map"),
-        
-        plotlyOutput("run_dist")
+        fluidRow(  # Wrap elements in fluidRow
+          column(width = 4, selectInput("run_selector", label = "Select Run:", choices = run_list, selected = 1)),
+          column(width = 12, leafletOutput("run_map") %>% 
+                   withSpinner(color="#0dc5c1"))
+        ),
+        fluidRow(
+          column(width = 16, plotlyOutput("run_dist") %>% 
+                   withSpinner(color="#0dc5c1"))
+        )
       ),
       tabItem(
         tabName = "runs",
         fluidPage(
-          
+
         )
       )
     )
   )
 )
+
+
+
+# ui = shiny::htmlTemplate(
+#   # Index Page
+#   "www/index.html",
+# 
+#   run_selector = selectInput("run_selector",
+#                              label = "Select Run:",
+#                              choices = run_list,
+#                              selected = 1
+#   ),
+# 
+#   run_path_map = leafletOutput("run_map") %>%
+#     withSpinner(color="#0dc5c1"),
+# 
+#   run_distribution = plotlyOutput("run_dist")
+# )
+
 
 server <- function(input, output, session) {
   # Filter data for the selected run
@@ -77,7 +97,7 @@ server <- function(input, output, session) {
     
     # Create a leaflet map
     leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 12) %>%
+      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
       addTiles() %>% # Add base map tiles
       addPolylines(lng = lng, lat = lat, data = run_data_filtered(), color = "blue") # Plot run path
   })
