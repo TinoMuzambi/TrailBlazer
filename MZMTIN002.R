@@ -4,12 +4,14 @@ library(leaflet)
 library(plotly)
 library(semantic.dashboard)
 library(shinycssloaders)
+library(viridis)
+library(leaflet.extras)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>%
   read_csv(., id = "run") %>%
   mutate(run = dense_rank(run))
 
-run_list <- dat %>%
+run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
   pull(run)
 
@@ -37,6 +39,10 @@ a, .dashboard-title {
 .ui.segment {
   border: none !important;
 }
+
+div.leaflet-control-container > div.leaflet-top.leaflet-left > div > a {
+  color: black !important;
+}
 "
       )
     ),
@@ -44,12 +50,12 @@ a, .dashboard-title {
       tabItem(
         tabName = "home",
         fluidRow(  # Wrap elements in fluidRow
-          column(width = 4, selectInput("run_selector", label = "Select Run:", choices = run_list, selected = 1)),
-          column(width = 12, leafletOutput("run_map") %>% 
+          column(width = 4, selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1)),
+          column(width = 12, leafletOutput("run.map") %>% 
                    withSpinner(color="#0dc5c1"))
         ),
         fluidRow(
-          column(width = 16, plotlyOutput("run_dist") %>% 
+          column(width = 16, plotlyOutput("run.dist") %>% 
                    withSpinner(color="#0dc5c1"))
         )
       ),
@@ -69,40 +75,62 @@ a, .dashboard-title {
 #   # Index Page
 #   "www/index.html",
 # 
-#   run_selector = selectInput("run_selector",
+#   run.selector = selectInput("run.selector",
 #                              label = "Select Run:",
-#                              choices = run_list,
+#                              choices = run.list,
 #                              selected = 1
 #   ),
 # 
-#   run_path_map = leafletOutput("run_map") %>%
+#   run.path.map = leafletOutput("run.map") %>%
 #     withSpinner(color="#0dc5c1"),
 # 
-#   run_distribution = plotlyOutput("run_dist")
+#   run.distribution = plotlyOutput("run.dist")
 # )
 
 
 server <- function(input, output, session) {
   # Filter data for the selected run
-  run_data_filtered <- reactive({
+  run.data.filtered <- reactive({
     dat %>%
-      filter(run == as.numeric(input$run_selector))
+      filter(run == as.numeric(input$run.selector))
   }) 
   
-  
-  output$run_map <- renderLeaflet({
+  output$run.map <- renderLeaflet({
     # Get coordinates for the run
-    lat <- run_data_filtered()$lat
-    lng <- run_data_filtered()$lng
+    lat <- run.data.filtered()$lat
+    lng <- run.data.filtered()$lng
+    elevation <- run.data.filtered()$elevation
+    
+    observe({
+      print(range(run.data.filtered()$elevation))
+    })
+    
+    # Create a color vector based on elevation using the viridis color scale
+    pal <- viridis(n = nrow(run.data.filtered()), option = "viridis")
+    colors <- pal[order(elevation)]  # Match colors to elevation values
+    
+    start.icon <- makeIcon(
+      iconUrl = "www/start.png",
+      iconWidth = 32, iconHeight = 32,
+      iconAnchorX = 16, iconAnchorY = 32,
+    )
+    
+    finish.icon <- makeIcon(
+      iconUrl = "www/finish.png",
+      iconWidth = 32, iconHeight = 32,
+      iconAnchorX = 16, iconAnchorY = 32
+    )
     
     # Create a leaflet map
     leaflet() %>%
       setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
       addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = run_data_filtered(), color = "blue") # Plot run path
+      addPolylines(lng = lng, lat = lat, data = run.data.filtered(), color = colors) %>% # Plot run path
+      addMarkers(lng = lng[1], lat = lat[1], icon = start.icon, popup = "Start") %>% 
+      addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon, popup = "End")
   })
   
-  output$run_dist <- renderPlotly({
+  output$run.dist <- renderPlotly({
     p <- ggplot(dat, aes(run)) +
       geom_histogram()
     p
