@@ -1,9 +1,11 @@
 library(tidyverse)
 library(leaflet)
 library(geosphere)
+library(lubridate)
+
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
   read_csv(., id = "run") %>% 
-  mutate(run = dense_rank(run))
+  mutate(run = dense_rank(run), time = as.period(hms(time)))
 
 # Filter data for the selected run
 run_data_filtered <- dat %>%
@@ -29,7 +31,19 @@ dat <- dat %>%
   mutate(distance = distance / 1000)
 
 # Group by run and sum distances to get total distance for each run
-run_distances <- dat %>%
+run.stats <- dat %>%
   group_by(run) %>%
-  summarize(total_distance = sum(distance, na.rm = TRUE))
+  mutate(dist = distHaversine(cbind(lag(lng), lag(lat)), cbind(lng, lat))) %>%
+  summarise(
+    total.distance = sum(dist, na.rm = TRUE),
+    total.time = sum(time),
+    average.elevation = mean(elevation),
+    elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))])),
+    date = first(date)
+  )
+
+curr.run.stats <- run.stats %>% 
+  filter(run == 1)
+
+curr.run.stats$total.distance
   

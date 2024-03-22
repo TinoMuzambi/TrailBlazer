@@ -7,9 +7,29 @@ library(shinycssloaders)
 library(viridis)
 library(leaflet.extras)
 
-dat <- list.files("data/", "*.csv", full.names = T) %>%
-  read_csv(., id = "run") %>%
-  mutate(run = dense_rank(run))
+dat <- list.files("data/", "*.csv", full.names = T) %>% 
+  read_csv(., id = "run") %>% 
+  mutate(run = dense_rank(run), time = as.period(hms(time)))
+
+# Compute distance between consecutive points
+dat <- dat %>% 
+  mutate(distance = c(0, distHaversine(
+    cbind(dat$lng[-nrow(dat)], dat$lat[-nrow(dat)]),
+    cbind(dat$lng[-1], dat$lat[-1])
+  ))) %>% 
+  mutate(distance = distance / 1000)
+
+# Group by run and sum distances to get total distance for each run
+run.stats <- dat %>%
+  group_by(run) %>%
+  mutate(dist = distHaversine(cbind(lag(lng), lag(lat)), cbind(lng, lat))) %>%
+  summarise(
+    total.distance = sum(dist, na.rm = T),
+    total.time = sum(time, na.rm = T),
+    average.elevation = mean(elevation, na.rm = T),
+    elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))]), na.rm = T),
+    date = as.character(first(date))
+  )
 
 run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
@@ -60,6 +80,10 @@ a.item, .dashboard-title {
   background-color: black !important;
   color: white !important;
 }
+
+.selectize-control.single .selectize-input:not(.no-arrow):after {
+    border-color: white transparent transparent transparent;
+}
 "
       )
     ),
@@ -68,13 +92,14 @@ a.item, .dashboard-title {
         tabName = "home",
         fluidRow(  # Wrap elements in fluidRow
           column(width = 4, selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1)),
-          column(width = 12, leafletOutput("run.map") %>% 
-                   withSpinner(color="#0dc5c1"))
+          column(width = 12, 
+                 leafletOutput("run.map") %>% 
+                   withSpinner(color="#0dc5c1"), 
+                 textOutput("run.dist"),
+                 textOutput("run.time"),
+                 textOutput("run.date")
+                 )
         ),
-        fluidRow(
-          column(width = 16, plotlyOutput("run.dist") %>% 
-                   withSpinner(color="#0dc5c1"))
-        )
       ),
       tabItem(
         tabName = "runs",
@@ -109,8 +134,13 @@ server <- function(input, output, session) {
   # Filter data for the selected run
   run.data.filtered <- reactive({
     dat %>%
-      filter(run == as.numeric(input$run.selector))
-  }) 
+      filter(run == input$run.selector)
+  })
+  
+  curr.run.stats <- reactive({
+    run.stats %>% 
+    filter(run == input$run.selector)
+  })
   
   output$run.map <- renderLeaflet({
     # Get coordinates for the run
@@ -143,10 +173,22 @@ server <- function(input, output, session) {
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon, popup = "End")
   })
   
-  output$run.dist <- renderPlotly({
-    p <- ggplot(dat, aes(run)) +
-      geom_histogram()
-    p
+  output$run.dist <- renderText({
+    paste0(round(curr.run.stats()$total.distance, 2), "km")
+  })
+  
+  output$run.time <- renderText({
+    seconds_to_hms <- function(seconds) {
+      hours <- floor(seconds / 3600)
+      minutes <- floor((seconds %% 3600) / 60)
+      seconds <- seconds %% 60
+      return(paste0(hours, ":", minutes, ":", seconds))
+    }
+    seconds_to_hms(curr.run.stats()$total.time)
+  })
+  
+  output$run.date <- renderText({
+    curr.run.stats()$date
   })
 }
 
