@@ -32,7 +32,7 @@ body, .tab-content, .dashboard-sidebar, .dashboard-header {
   color: white !important;
 }
 
-a, .dashboard-title {
+a.item, .dashboard-title {
   color: white !important;
 }
 
@@ -40,8 +40,25 @@ a, .dashboard-title {
   border: none !important;
 }
 
-div.leaflet-control-container > div.leaflet-top.leaflet-left > div > a {
-  color: black !important;
+.ui.top.menu.dashboard-header {
+  border: none !important;
+}
+
+.leaflet {
+  border-radius: 1rem;
+  border: 1px solid white;
+}
+
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+.selectize-input {
+  background-color: black !important;
+  color: white !important;
 }
 "
       )
@@ -100,10 +117,6 @@ server <- function(input, output, session) {
     lat <- run.data.filtered()$lat
     lng <- run.data.filtered()$lng
     elevation <- run.data.filtered()$elevation
-    
-    observe({
-      print(range(run.data.filtered()$elevation))
-    })
     
     # Create a color vector based on elevation using the viridis color scale
     pal <- viridis(n = nrow(run.data.filtered()), option = "viridis")
