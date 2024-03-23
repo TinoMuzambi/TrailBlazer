@@ -22,14 +22,6 @@ leaflet() %>%
   addTiles() %>% # Add base map tiles
   addPolylines(lng = lng, lat = lat, data = run_data_filtered, color = "blue") # Plot run path
 
-# Compute distance between consecutive points
-dat <- dat %>% 
-  mutate(distance = c(0, distHaversine(
-    cbind(dat$lng[-nrow(dat)], dat$lat[-nrow(dat)]),
-    cbind(dat$lng[-1], dat$lat[-1])
-  ))) %>% 
-  mutate(distance = distance / 1000)
-
 # Group by run and sum distances to get total distance for each run
 run.stats <- dat %>%
   group_by(run) %>%
@@ -40,7 +32,8 @@ run.stats <- dat %>%
     average.elevation = mean(elevation),
     elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))])),
     date = first(date)
-  )
+  ) %>% 
+  mutate(total.distance = total.distance / 1000)
 
 curr.run.stats <- run.stats %>% 
   filter(run == 1)

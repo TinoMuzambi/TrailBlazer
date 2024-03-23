@@ -11,14 +11,6 @@ dat <- list.files("data/", "*.csv", full.names = T) %>%
   read_csv(., id = "run") %>% 
   mutate(run = dense_rank(run), time = as.period(hms(time)))
 
-# Compute distance between consecutive points
-dat <- dat %>% 
-  mutate(distance = c(0, distHaversine(
-    cbind(dat$lng[-nrow(dat)], dat$lat[-nrow(dat)]),
-    cbind(dat$lng[-1], dat$lat[-1])
-  ))) %>% 
-  mutate(distance = distance / 1000)
-
 # Group by run and sum distances to get total distance for each run
 run.stats <- dat %>%
   group_by(run) %>%
@@ -29,7 +21,8 @@ run.stats <- dat %>%
     average.elevation = mean(elevation, na.rm = T),
     elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))]), na.rm = T),
     date = as.character(first(date))
-  )
+  ) %>% 
+  mutate(total.distance = total.distance / 1000)
 
 run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
@@ -169,8 +162,8 @@ server <- function(input, output, session) {
       setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
       addTiles() %>% # Add base map tiles
       addPolylines(lng = lng, lat = lat, data = run.data.filtered(), color = colors) %>% # Plot run path
-      addMarkers(lng = lng[1], lat = lat[1], icon = start.icon, popup = "Start") %>% 
-      addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon, popup = "End")
+      addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
+      addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon)
   })
   
   output$run.dist <- renderText({
