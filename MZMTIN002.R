@@ -78,29 +78,72 @@ a.item, .dashboard-title {
 .selectize-control.single .selectize-input:not(.no-arrow):after {
     border-color: white transparent transparent transparent;
 }
+
+.info-card {
+  background: #333;
+  padding: 1rem 2rem;
+  width: fit-content;
+  border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  line-height: 1;
+  height: 12rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bold {
+  font-weight: bold;
+  font-size: 4rem;
+  padding-bottom: 0.5rem;
+}
 "
       )
     ),
     tabItems(
       tabItem(
         tabName = "home",
-        
+        fluidPage(
+          titlePanel("YOUR RUNS"),
+          tags$div(
+            style = "display: flex; gap: 1rem",
+            # First element
+            tags$div(
+              htmlOutput("num.runs")
+            ),
+            # Second element
+            tags$div(
+              htmlOutput("total.distance")
+            ),
+            # Third element
+            tags$div(
+              htmlOutput("total.time")
+            ),
+            # Fourth element
+            tags$div(
+              htmlOutput("average.pace")
+            )
+          )
+        )
       ),
       tabItem(
         tabName = "runs",
-        fluidRow(  # Wrap elements in fluidRow
-          column(width = 4, selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1)),
-          column(width = 12, 
-                 leafletOutput("run.map") %>% 
-                   withSpinner(color="#0dc5c1"), 
-                 plotlyOutput("elevation.chart", height = "200px") %>% 
-                   withSpinner(color="#0dc5c1"),
-                 textOutput("run.dist"),
-                 textOutput("run.time"),
-                 textOutput("run.date"),
-                 textOutput("run.pace")
+        fluidPage(
+          fluidRow(  # Wrap elements in fluidRow
+            column(width = 4, selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1)),
+            column(width = 12, 
+                   leafletOutput("run.map") %>% 
+                     withSpinner(color="#0dc5c1"), 
+                   plotlyOutput("elevation.chart", height = "200px") %>% 
+                     withSpinner(color="#0dc5c1"),
+                   textOutput("run.dist"),
+                   textOutput("run.time"),
+                   textOutput("run.date"),
+                   textOutput("run.pace")
+            )
           )
-        ),
+        )
       )
     )
   )
@@ -136,6 +179,25 @@ server <- function(input, output, session) {
     run.stats %>% 
     filter(run == input$run.selector)
   })
+  
+  # Function to convert seconds to a formatted string
+  format.run.time <- function(seconds, hours.only = F) {
+    # Calculate hours, minutes, and seconds
+    hours <- floor(seconds / 3600)
+    minutes <- floor((seconds %% 3600) / 60)
+    remaining.seconds <- seconds %% 60
+    
+    # Build the formatted string
+    formatted.time <- paste0(if (hours > 0) paste0(hours, " hour", if (hours > 1) "s", ", "), 
+                             if (minutes > 0) paste0(minutes, " minute", if (minutes > 1) "s ", " and "), 
+                             if (remaining.seconds > 0 || (hours == 0 && minutes == 0)) paste0(remaining.seconds, " second", if (remaining.seconds > 1) "s"), 
+                             ".")
+    
+    if (hours.only) {
+      return(hours) 
+    }
+    return(formatted.time)
+  }
   
   output$run.map <- renderLeaflet({
     # Get coordinates for the run
@@ -173,22 +235,6 @@ server <- function(input, output, session) {
   })
   
   output$run.time <- renderText({
-    # Function to convert seconds to a formatted string
-    format.run.time <- function(seconds) {
-      # Calculate hours, minutes, and seconds
-      hours <- floor(seconds() / 3600)
-      minutes <- floor((seconds %% 3600) / 60)
-      remaining.seconds <- seconds %% 60
-      
-      # Build the formatted string
-      formatted.time <- paste0("Time: ", 
-                              if (hours > 0) paste0(hours, " hour", if (hours > 1) "s", ", "), 
-                              if (minutes > 0) paste0(minutes, " minute", if (minutes > 1) "s ", " and "), 
-                              if (remaining.seconds > 0 || (hours == 0 && minutes == 0)) paste0(remaining.seconds, " second", if (remaining.seconds > 1) "s"), 
-                              ".")
-      
-      return(formatted.time)
-    }
     format.run.time(curr.run.stats()$total.time)
   })
   
@@ -213,6 +259,38 @@ server <- function(input, output, session) {
         axis.text = element_text(color = "white"),        # Set axis text color to white
         axis.title = element_text(color = "white")        # Set axis title color to white
       )
+  })
+  
+  output$num.runs <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+              nrow(run.stats),
+             "</span><p>total runs</p></div>")
+    )
+  })
+  
+  output$total.distance <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(sum(run.stats$total.distance), 2),
+             " km</span><p>ran</p></div>")
+    )
+  })
+  
+  output$total.time <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>>",
+             format.run.time(sum(run.stats$total.time), hours.only = T),
+             " hours</span><p>spent running</p></div>")
+    )
+  })
+  
+  output$average.pace <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(mean(run.stats$pace), 2),
+             ' "/km</span><p>average pace</p></div>')
+    )
   })
 }
 
