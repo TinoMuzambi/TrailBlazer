@@ -9,7 +9,7 @@ library(leaflet.extras)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
   read_csv(., id = "run") %>% 
-  mutate(run = dense_rank(run), time = as.POSIXct(time))
+  mutate(run = dense_rank(run), time = ymd_hms(paste(date, time)))
 
 # Group by run and sum distances to get total distance for each run
 run.stats <- dat %>%
@@ -84,23 +84,23 @@ a.item, .dashboard-title {
     tabItems(
       tabItem(
         tabName = "home",
+        
+      ),
+      tabItem(
+        tabName = "runs",
         fluidRow(  # Wrap elements in fluidRow
           column(width = 4, selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1)),
           column(width = 12, 
                  leafletOutput("run.map") %>% 
                    withSpinner(color="#0dc5c1"), 
+                 plotlyOutput("elevation.chart", height = "200px") %>% 
+                   withSpinner(color="#0dc5c1"),
                  textOutput("run.dist"),
                  textOutput("run.time"),
                  textOutput("run.date"),
                  textOutput("run.pace")
-                 )
+          )
         ),
-      ),
-      tabItem(
-        tabName = "runs",
-        fluidPage(
-
-        )
       )
     )
   )
@@ -198,6 +198,21 @@ server <- function(input, output, session) {
   
   output$run.pace <- renderText({
     paste0("Pace: ", round(curr.run.stats()$pace, 2), " min/km")
+  })
+  
+  output$elevation.chart <- renderPlotly({
+    run.data.filtered() %>% 
+      ggplot(aes(time, elevation)) +
+      geom_line(color = "white") + 
+      xlab("Time") +
+      ylab("Elevation (m)") +
+      theme(
+        plot.background = element_rect(fill = "#161616"),  # Set plot background color to black
+        panel.background = element_rect(fill = "#161616"), # Set panel background color to black
+        panel.border = element_blank(),                   # Remove panel border
+        axis.text = element_text(color = "white"),        # Set axis text color to white
+        axis.title = element_text(color = "white")        # Set axis title color to white
+      )
   })
 }
 

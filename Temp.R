@@ -5,7 +5,7 @@ library(lubridate)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
   read_csv(., id = "run") %>% 
-  mutate(run = dense_rank(run), time = as.POSIXct(time))
+  mutate(run = dense_rank(run), time = ymd_hms(paste(date, time)))
 
 # Filter data for the selected run
 run_data_filtered <- dat %>%
