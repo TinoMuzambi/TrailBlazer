@@ -129,21 +129,28 @@ a.item, .dashboard-title {
       ),
       tabItem(
         tabName = "runs",
-        fluidPage(
           fluidRow(  # Wrap elements in fluidRow
-            column(width = 4, selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1)),
-            column(width = 12, 
+            column(width = 16, 
+                   selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1),
+                   tags$div(
+                     style = "margin-block: 1rem;"
+                   ),
                    leafletOutput("run.map") %>% 
                      withSpinner(color="#0dc5c1"), 
+                   tags$div(
+                     style = "margin-block: 1rem;"
+                   ),
                    plotlyOutput("elevation.chart", height = "200px") %>% 
                      withSpinner(color="#0dc5c1"),
+                   tags$div(
+                     style = "margin-block: 1rem;"
+                   ),
                    textOutput("run.dist"),
                    textOutput("run.time"),
                    textOutput("run.date"),
                    textOutput("run.pace")
             )
           )
-        )
       )
     )
   )
@@ -188,7 +195,8 @@ server <- function(input, output, session) {
     remaining.seconds <- seconds %% 60
     
     # Build the formatted string
-    formatted.time <- paste0(if (hours > 0) paste0(hours, " hour", if (hours > 1) "s", ", "), 
+    formatted.time <- paste0("Time: ",
+      if (hours > 0) paste0(hours, " hour", if (hours > 1) "s", ", "), 
                              if (minutes > 0) paste0(minutes, " minute", if (minutes > 1) "s ", " and "), 
                              if (remaining.seconds > 0 || (hours == 0 && minutes == 0)) paste0(remaining.seconds, " second", if (remaining.seconds > 1) "s"), 
                              ".")
