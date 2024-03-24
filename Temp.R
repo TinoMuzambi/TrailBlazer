@@ -5,7 +5,7 @@ library(lubridate)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
   read_csv(., id = "run") %>% 
-  mutate(run = dense_rank(run), time = as.period(hms(time)))
+  mutate(run = dense_rank(run), time = as.POSIXct(time))
 
 # Filter data for the selected run
 run_data_filtered <- dat %>%
@@ -28,12 +28,13 @@ run.stats <- dat %>%
   mutate(dist = distHaversine(cbind(lag(lng), lag(lat)), cbind(lng, lat))) %>%
   summarise(
     total.distance = sum(dist, na.rm = TRUE),
-    total.time = sum(time),
+    total.time = as.numeric(difftime(last(time), first(time), units = "secs")),
     average.elevation = mean(elevation),
     elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))])),
     date = first(date)
   ) %>% 
-  mutate(total.distance = total.distance / 1000)
+  mutate(total.distance = total.distance / 1000) %>% 
+  mutate(pace = (as.numeric(total.time) / 60) / total.distance)
 
 curr.run.stats <- run.stats %>% 
   filter(run == 1)

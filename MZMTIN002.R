@@ -9,7 +9,7 @@ library(leaflet.extras)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
   read_csv(., id = "run") %>% 
-  mutate(run = dense_rank(run), time = as.period(hms(time)))
+  mutate(run = dense_rank(run), time = as.POSIXct(time))
 
 # Group by run and sum distances to get total distance for each run
 run.stats <- dat %>%
@@ -17,12 +17,13 @@ run.stats <- dat %>%
   mutate(dist = distHaversine(cbind(lag(lng), lag(lat)), cbind(lng, lat))) %>%
   summarise(
     total.distance = sum(dist, na.rm = T),
-    total.time = sum(time, na.rm = T),
+    total.time = as.numeric(difftime(last(time), first(time), units = "secs")),
     average.elevation = mean(elevation, na.rm = T),
     elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))]), na.rm = T),
     date = as.character(first(date))
   ) %>% 
-  mutate(total.distance = total.distance / 1000)
+  mutate(total.distance = total.distance / 1000) %>% 
+  mutate(pace = (as.numeric(total.time) / 60) / total.distance)
 
 run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
@@ -90,7 +91,8 @@ a.item, .dashboard-title {
                    withSpinner(color="#0dc5c1"), 
                  textOutput("run.dist"),
                  textOutput("run.time"),
-                 textOutput("run.date")
+                 textOutput("run.date"),
+                 textOutput("run.pace")
                  )
         ),
       ),
@@ -167,21 +169,35 @@ server <- function(input, output, session) {
   })
   
   output$run.dist <- renderText({
-    paste0(round(curr.run.stats()$total.distance, 2), "km")
+    paste0("Distance: ", round(curr.run.stats()$total.distance, 2), "km")
   })
   
   output$run.time <- renderText({
-    seconds_to_hms <- function(seconds) {
-      hours <- floor(seconds / 3600)
+    # Function to convert seconds to a formatted string
+    format.run.time <- function(seconds) {
+      # Calculate hours, minutes, and seconds
+      hours <- floor(seconds() / 3600)
       minutes <- floor((seconds %% 3600) / 60)
-      seconds <- seconds %% 60
-      return(paste0(hours, ":", minutes, ":", seconds))
+      remaining.seconds <- seconds %% 60
+      
+      # Build the formatted string
+      formatted.time <- paste0("Time: ", 
+                              if (hours > 0) paste0(hours, " hour", if (hours > 1) "s", ", "), 
+                              if (minutes > 0) paste0(minutes, " minute", if (minutes > 1) "s ", " and "), 
+                              if (remaining.seconds > 0 || (hours == 0 && minutes == 0)) paste0(remaining.seconds, " second", if (remaining.seconds > 1) "s"), 
+                              ".")
+      
+      return(formatted.time)
     }
-    seconds_to_hms(curr.run.stats()$total.time)
+    format.run.time(curr.run.stats()$total.time)
   })
   
   output$run.date <- renderText({
-    curr.run.stats()$date
+   paste0("Date: ", curr.run.stats()$date)
+  })
+  
+  output$run.pace <- renderText({
+    paste0("Pace: ", round(curr.run.stats()$pace, 2), " min/km")
   })
 }
 
