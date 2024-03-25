@@ -33,11 +33,11 @@ run.list <- dat %>%
 
 ui <- function(req) {
   dashboardPage(
-  dashboardHeader(title = "Runner"),
+  dashboardHeader(title = "Runner", logo_path = "logo.png", logo_align = "left"),
   semantic.dashboard::dashboardSidebar(
     sidebarMenu(
-      menuItem("Home", tabName = "home"),
-      menuItem("Runs", tabName = "runs")
+      menuItem("Home", tabName = "home", icon = icon("home")),
+      menuItem("Runs", tabName = "runs", icon = icon("map"))
     )
   ),
   dashboardBody(
