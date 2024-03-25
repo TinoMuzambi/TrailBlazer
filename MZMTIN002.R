@@ -23,7 +23,9 @@ run.stats <- dat %>%
     date = as.character(first(date))
   ) %>% 
   mutate(total.distance = total.distance / 1000) %>% 
-  mutate(pace = (as.numeric(total.time) / 60) / total.distance)
+  mutate(pace = (as.numeric(total.time) / 60) / total.distance) %>% 
+  mutate(speed = total.distance /  (as.numeric(total.time) / 3600)) %>% 
+  mutate(date = ymd(date))
 
 run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
@@ -98,6 +100,7 @@ a.item, .dashboard-title {
   font-weight: bold;
   font-size: 4rem;
   padding-bottom: 0.5rem;
+  color: limegreen;
 }
 
 .run-table {
@@ -128,16 +131,23 @@ a.item, .dashboard-title {
             # Fourth element
             tags$div(
               htmlOutput("average.pace")
-            )
+            ),
           ),
-          fluidRow(
-            column(width = 16,
-                   tags$div(
-                     style = "margin-block: 1rem;"
-                   ),
-                   plotlyOutput("pace.chart", height = "200px") %>% 
-                     withSpinner(color="#0dc5c1")
-            )
+          tags$div(
+            style = "margin-block: 1rem;"
+          ),
+          tags$div(
+            style = "display: grid; gap: 1rem; grid-template-columns: 1fr 1fr;",
+            # First element
+            tags$div(
+              plotlyOutput("pace.chart", height = "200px") %>% 
+                withSpinner(color="#0dc5c1")
+            ),
+            # Second element
+            tags$div(
+              plotlyOutput("speed.chart", height = "200px") %>% 
+                withSpinner(color="#0dc5c1")
+            ),
           ),
           fluidRow(
             column(width = 16,
@@ -181,7 +191,7 @@ a.item, .dashboard-title {
 }
 
 server <- function(input, output, session) {
-  setBookmarkExclude(c("runs.table_rows_selected", "runs.table_columns_selected", "runs.table_cells_selected", "runs.table_rows_current", "runs.table_rows_all", "runs.table_state", "runs.table_search", "runs.table_cell_clicked", ".clientValue-default-plotlyCrosstalkOpts", "plotly_afterplot-A", "run.map_bounds", "run.map_center", "run.map_zoom", "plotly_relayout-A"))
+  setBookmarkExclude(c("runs.table_rows_selected", "runs.table_columns_selected", "runs.table_cells_selected", "runs.table_rows_current", "runs.table_rows_all", "runs.table_state", "runs.table_search", "runs.table_cell_clicked", ".clientValue-default-plotlyCrosstalkOpts", "plotly_afterplot-A", "run.map_bounds", "run.map_center", "run.map_zoom", "plotly_relayout-A", "plotly_hover-A"))
   
   observe({
     # Trigger this observer every time an input changes
@@ -326,9 +336,26 @@ server <- function(input, output, session) {
   
   output$pace.chart <- renderPlotly({
     run.stats %>% 
-      ggplot(aes(run, pace)) +
-      geom_line(color = "white") +
-      labs(x = "Run", y = "Pace (\"/km)", title = "Pace over Runs") +
+      ggplot(aes(date, pace)) +
+      geom_line(color = "limegreen") +
+      labs(x = "Date", y = "Pace (\"/km)", title = "Pace over Runs") +
+      theme(
+        plot.background = element_rect(fill = "#161616"),  # Set plot background color to black
+        panel.background = element_rect(fill = "#161616"), # Set panel background color to black
+        panel.border = element_blank(),                   # Remove panel border
+        axis.text = element_text(color = "white"),        # Set axis text color to white
+        axis.title = element_text(color = "white"),       # Set axis title color to white
+        title = element_text(color = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+      )
+  })
+  
+  output$speed.chart <- renderPlotly({
+    run.stats %>% 
+      ggplot(aes(date, speed)) +
+      geom_line(color = "limegreen") +
+      labs(x = "Date", y = "Speed (km/h)", title = "Speed over Runs") +
       theme(
         plot.background = element_rect(fill = "#161616"),  # Set plot background color to black
         panel.background = element_rect(fill = "#161616"), # Set panel background color to black
