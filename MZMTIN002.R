@@ -19,7 +19,6 @@ run.stats <- dat %>%
   summarise(
     total.distance = sum(dist, na.rm = T),
     total.time = as.numeric(difftime(last(time), first(time), units = "secs")),
-    average.elevation = mean(elevation, na.rm = T),
     elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))]), na.rm = T),
     date = as.character(first(date))
   ) %>% 
@@ -30,9 +29,10 @@ run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
   pull(run)
 
-ui <- dashboardPage(
+ui <- function(req) {
+  dashboardPage(
   dashboardHeader(title = "Runner"),
-  dashboardSidebar(
+  semantic.dashboard::dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home"),
       menuItem("Runs", tabName = "runs")
@@ -135,7 +135,17 @@ a.item, .dashboard-title {
                    tags$div(
                      style = "margin-block: 1rem;"
                    ),
-                   dataTableOutput("runs.table")
+                   plotlyOutput("pace.chart", height = "200px") %>% 
+                     withSpinner(color="#0dc5c1")
+            )
+          ),
+          fluidRow(
+            column(width = 16,
+                   tags$div(
+                     style = "margin-block: 1rem;"
+                   ),
+                   dataTableOutput("runs.table") %>% 
+                     withSpinner(color="#0dc5c1")
             )
           )
         )
@@ -168,27 +178,21 @@ a.item, .dashboard-title {
     )
   )
 )
-
-
-
-# ui = shiny::htmlTemplate(
-#   # Index Page
-#   "www/index.html",
-# 
-#   run.selector = selectInput("run.selector",
-#                              label = "Select Run:",
-#                              choices = run.list,
-#                              selected = 1
-#   ),
-# 
-#   run.path.map = leafletOutput("run.map") %>%
-#     withSpinner(color="#0dc5c1"),
-# 
-#   run.distribution = plotlyOutput("run.dist")
-# )
-
+}
 
 server <- function(input, output, session) {
+  setBookmarkExclude(c("runs.table_rows_selected", "runs.table_columns_selected", "runs.table_cells_selected", "runs.table_rows_current", "runs.table_rows_all", "runs.table_state", "runs.table_search", "runs.table_cell_clicked", ".clientValue-default-plotlyCrosstalkOpts", "plotly_afterplot-A", "run.map_bounds", "run.map_center", "run.map_zoom", "plotly_relayout-A"))
+  
+  observe({
+    # Trigger this observer every time an input changes
+    reactiveValuesToList(input)
+    session$doBookmark()
+  })
+  
+  onBookmarked(function(url) {
+    updateQueryString(url)
+  })
+  
   # Filter data for the selected run
   run.data.filtered <- reactive({
     dat %>%
@@ -226,8 +230,8 @@ server <- function(input, output, session) {
     lng <- run.data.filtered()$lng
     elevation <- run.data.filtered()$elevation
     
-    # Create a color vector based on elevation using the spectral color scale
-    pal <- viridis(n = nrow(run.data.filtered()), option = "spectral")
+    # Create a color vector based on elevation using the viridis color scale
+    pal <- viridis(n = nrow(run.data.filtered()), option = "viridis")
     colors <- pal[order(elevation)]  # Match colors to elevation values
     
     start.icon <- makeIcon(
@@ -278,7 +282,9 @@ server <- function(input, output, session) {
         panel.background = element_rect(fill = "#161616"), # Set panel background color to black
         panel.border = element_blank(),                   # Remove panel border
         axis.text = element_text(color = "white"),        # Set axis text color to white
-        axis.title = element_text(color = "white")        # Set axis title color to white
+        axis.title = element_text(color = "white"),       # Set axis title color to white
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
       )
   })
   
@@ -317,6 +323,23 @@ server <- function(input, output, session) {
   output$runs.table <- renderDataTable({
     datatable(run.stats, class = "run-table", options = list(searching = F), selection = "none")
   })
+  
+  output$pace.chart <- renderPlotly({
+    run.stats %>% 
+      ggplot(aes(run, pace)) +
+      geom_line(color = "white") +
+      labs(x = "Run", y = "Pace (\"/km)", title = "Pace over Runs") +
+      theme(
+        plot.background = element_rect(fill = "#161616"),  # Set plot background color to black
+        panel.background = element_rect(fill = "#161616"), # Set panel background color to black
+        panel.border = element_blank(),                   # Remove panel border
+        axis.text = element_text(color = "white"),        # Set axis text color to white
+        axis.title = element_text(color = "white"),       # Set axis title color to white
+        title = element_text(color = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+      )
+  })
 }
 
-shinyApp(ui, server)
+shinyApp(ui, server, enableBookmarking = "url")
