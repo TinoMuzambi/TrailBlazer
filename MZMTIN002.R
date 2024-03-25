@@ -6,6 +6,7 @@ library(semantic.dashboard)
 library(shinycssloaders)
 library(viridis)
 library(leaflet.extras)
+library(DT)
 
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
   read_csv(., id = "run") %>% 
@@ -98,6 +99,10 @@ a.item, .dashboard-title {
   font-size: 4rem;
   padding-bottom: 0.5rem;
 }
+
+.run-table {
+  color: white !important;
+}
 "
       )
     ),
@@ -123,6 +128,14 @@ a.item, .dashboard-title {
             # Fourth element
             tags$div(
               htmlOutput("average.pace")
+            )
+          ),
+          fluidRow(
+            column(width = 16,
+                   tags$div(
+                     style = "margin-block: 1rem;"
+                   ),
+                   dataTableOutput("runs.table")
             )
           )
         )
@@ -213,8 +226,8 @@ server <- function(input, output, session) {
     lng <- run.data.filtered()$lng
     elevation <- run.data.filtered()$elevation
     
-    # Create a color vector based on elevation using the viridis color scale
-    pal <- viridis(n = nrow(run.data.filtered()), option = "viridis")
+    # Create a color vector based on elevation using the spectral color scale
+    pal <- viridis(n = nrow(run.data.filtered()), option = "spectral")
     colors <- pal[order(elevation)]  # Match colors to elevation values
     
     start.icon <- makeIcon(
@@ -299,6 +312,10 @@ server <- function(input, output, session) {
              round(mean(run.stats$pace), 2),
              ' "/km</span><p>average pace</p></div>')
     )
+  })
+  
+  output$runs.table <- renderDataTable({
+    datatable(run.stats, class = "run-table", options = list(searching = F), selection = "none")
   })
 }
 
