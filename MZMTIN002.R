@@ -217,6 +217,7 @@ i.icon {
                  )
         ),
         tabPanel(title = "featured",
+                 actionButton(inputId = "go.runs", label = "Go to Runs"),
                  fluidRow(column(width = 16,
                                  h1("Featured Runs"))),
                  fluidRow(
@@ -283,6 +284,10 @@ server <- function(input, output, session) {
   
   onBookmarked(function(url) {
     updateQueryString(url)
+  })
+  
+  observeEvent(input$go.runs, {
+    updateTabsetPanel(session = session, inputId = "tabs", selected = "runs")
   })
   
   # Filter data for the selected run
