@@ -33,11 +33,20 @@ run.list <- dat %>%
 
 ui <- function(req) {
   fluidPage(
-    # dashboardHeader(title = "Runner", logo_path = "logo.png", logo_align = "left"),
-    tags$head(
-      tags$style(
-        "
-body, .tab-content, .dashboard-sidebar, .dashboard-header {
+    sidebarLayout(
+      sidebarPanel(
+        radioButtons(inputId = "tabswitcher", 
+                     label = "Runner",
+                     choiceNames = list("Home", "Run", "Featured"),
+                     choiceValues = list("home", "run", "featured"),
+                     selected = "home")
+      ),
+      mainPanel(
+        # dashboardHeader(title = "Runner", logo_path = "logo.png", logo_align = "left"),
+        tags$head(
+          tags$style(
+            "
+body, .tab-content, .dashboard-sidebar, .dashboard-header, form.well {
   background-color: rgb(22, 22, 22) !important;
   color: white !important;
 }
@@ -67,7 +76,7 @@ a.item, .dashboard-title {
 }
 
 .selectize-input, .selectize-dropdown {
-  background-color: black !important;
+  background-color: rgb(22, 22, 22) !important;
   color: white !important;
   z-index: 2000 !important;
 }
@@ -114,163 +123,173 @@ i.icon {
   right: -1rem;
   color: white;
 }
+
+form.well {
+  border: none;
+}
+
+form.well input[type=radio] {
+  visibility: hidden;
+}
 "
-      )),
-    tabsetPanel(
-      id = "tabs",
-      type = "tabs",
-      selected = "home",
-        tabPanel(title = "home",
-                 fluidPage(
-                   titlePanel("Lifetime Stats"),
-                   tags$div(
-                     style = "display: flex; gap: 1rem",
-                     # First element
+          )),
+        tabsetPanel(
+          id = "tabs",
+          type = "hidden",
+          tabPanelBody("home",
+                   fluidPage(
+                     titlePanel("Lifetime Stats"),
                      tags$div(
-                       htmlOutput("num.runs")
+                       style = "display: flex; gap: 1rem",
+                       # First element
+                       tags$div(
+                         htmlOutput("num.runs")
+                       ),
+                       # Second element
+                       tags$div(
+                         htmlOutput("total.distance")
+                       ),
+                       # Third element
+                       tags$div(
+                         htmlOutput("total.time")
+                       ),
+                       # Fourth element
+                       tags$div(
+                         htmlOutput("average.pace")
+                       ),
                      ),
-                     # Second element
                      tags$div(
-                       htmlOutput("total.distance")
+                       style = "margin-block: 1rem;"
                      ),
-                     # Third element
                      tags$div(
-                       htmlOutput("total.time")
+                       style = "display: grid; gap: 1rem; grid-template-columns: 1fr 1fr;",
+                       # First element
+                       tags$div(
+                         plotlyOutput("pace.chart", height = "200px") %>% 
+                           withSpinner(color="#0dc5c1")
+                       ),
+                       # Second element
+                       tags$div(
+                         plotlyOutput("speed.chart", height = "200px") %>% 
+                           withSpinner(color="#0dc5c1")
+                       ),
                      ),
-                     # Fourth element
+                     h2("Last 5 Runs Stats"),
                      tags$div(
-                       htmlOutput("average.pace")
+                       style = "margin-block: 1rem;"
                      ),
-                   ),
-                   tags$div(
-                     style = "margin-block: 1rem;"
-                   ),
-                   tags$div(
-                     style = "display: grid; gap: 1rem; grid-template-columns: 1fr 1fr;",
-                     # First element
                      tags$div(
-                       plotlyOutput("pace.chart", height = "200px") %>% 
-                         withSpinner(color="#0dc5c1")
+                       style = "display: flex; gap: 1rem",
+                       # Second element
+                       tags$div(
+                         htmlOutput("total.distance.last.five")
+                       ),
+                       # Third element
+                       tags$div(
+                         htmlOutput("total.time.last.five")
+                       ),
+                       # Fourth element
+                       tags$div(
+                         htmlOutput("average.pace.last.five")
+                       ),
                      ),
-                     # Second element
-                     tags$div(
-                       plotlyOutput("speed.chart", height = "200px") %>% 
-                         withSpinner(color="#0dc5c1")
-                     ),
-                   ),
-                   h2("Last 5 Runs Stats"),
-                   tags$div(
-                     style = "margin-block: 1rem;"
-                   ),
-                   tags$div(
-                     style = "display: flex; gap: 1rem",
-                     # Second element
-                     tags$div(
-                       htmlOutput("total.distance.last.five")
-                     ),
-                     # Third element
-                     tags$div(
-                       htmlOutput("total.time.last.five")
-                     ),
-                     # Fourth element
-                     tags$div(
-                       htmlOutput("average.pace.last.five")
-                     ),
-                   ),
-                   fluidRow(
-                     column(width = 16,
+                     fluidRow(
+                       column(width = 16,
+                              tags$div(
+                                style = "margin-block: 1rem;"
+                              ),
+                              dataTableOutput("runs.table") %>% 
+                                withSpinner(color="#0dc5c1")
+                       )
+                     )
+                   )
+          ),
+          tabPanelBody("run",
+                   fluidRow(  # Wrap elements in fluidRow
+                     column(width = 16, 
+                            selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1),
                             tags$div(
                               style = "margin-block: 1rem;"
                             ),
-                            dataTableOutput("runs.table") %>% 
+                            leafletOutput("run.map") %>% 
+                              withSpinner(color="#0dc5c1"), 
+                            tags$div(
+                              style = "margin-block: 2rem;"
+                            ),
+                            tags$div(
+                              style = "display: flex; gap: 1rem",
+                              htmlOutput("run.dist"),
+                              htmlOutput("run.time"),
+                              htmlOutput("run.date"),
+                              htmlOutput("run.pace"),
+                              htmlOutput("run.speed")
+                            ),
+                            tags$div(
+                              style = "margin-block: 1rem;"
+                            ),
+                            plotlyOutput("elevation.chart", height = "200px") %>% 
                               withSpinner(color="#0dc5c1")
                      )
                    )
-                 )
-        ),
-        tabPanel(title = "runs",
-                 fluidRow(  # Wrap elements in fluidRow
-                   column(width = 16, 
-                          selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1),
-                          tags$div(
-                            style = "margin-block: 1rem;"
-                          ),
-                          leafletOutput("run.map") %>% 
-                            withSpinner(color="#0dc5c1"), 
-                          tags$div(
-                            style = "margin-block: 2rem;"
-                          ),
-                          tags$div(
-                            style = "display: flex; gap: 1rem",
-                            htmlOutput("run.dist"),
-                            htmlOutput("run.time"),
-                            htmlOutput("run.date"),
-                            htmlOutput("run.pace"),
-                            htmlOutput("run.speed")
-                          ),
-                          tags$div(
-                            style = "margin-block: 1rem;"
-                          ),
-                          plotlyOutput("elevation.chart", height = "200px") %>% 
-                            withSpinner(color="#0dc5c1")
-                   )
-                 )
-        ),
-        tabPanel(title = "featured",
-                 actionButton(inputId = "go.runs", label = "Go to Runs"),
-                 fluidRow(column(width = 16,
-                                 h1("Featured Runs"))),
-                 fluidRow(
-                   column(width = 4,
-                          h2("Longest Run"),
-                          htmlOutput("longest.run")
+          ),
+          tabPanelBody("featured",
+                   actionButton(inputId = "go.runs", label = "Go to Runs"),
+                   fluidRow(column(width = 16,
+                                   h1("Featured Runs"))),
+                   fluidRow(
+                     column(width = 4,
+                            h2("Longest Run"),
+                            htmlOutput("longest.run")
+                     ),
+                     column(width = 12,
+                            leafletOutput("longest.run.map") %>% 
+                              withSpinner(color="#0dc5c1")
+                     )
                    ),
-                   column(width = 12,
-                          leafletOutput("longest.run.map") %>% 
-                            withSpinner(color="#0dc5c1")
-                   )
-                 ),
-                 fluidRow(
-                   column(width = 12,
-                          leafletOutput("shortest.run.map") %>% 
-                            withSpinner(color="#0dc5c1")
+                   fluidRow(
+                     column(width = 12,
+                            leafletOutput("shortest.run.map") %>% 
+                              withSpinner(color="#0dc5c1")
+                     ),
+                     column(width = 4,
+                            h2("Shortest Run"),
+                            htmlOutput("shortest.run")
+                     )
                    ),
-                   column(width = 4,
-                          h2("Shortest Run"),
-                          htmlOutput("shortest.run")
-                   )
-                 ),
-                 fluidRow(
-                   column(width = 4,
-                          h2("Fastest Run"),
-                          htmlOutput("fastest.run")
+                   fluidRow(
+                     column(width = 4,
+                            h2("Fastest Run"),
+                            htmlOutput("fastest.run")
+                     ),
+                     column(width = 12,
+                            leafletOutput("fastest.run.map") %>% 
+                              withSpinner(color="#0dc5c1")
+                     )
                    ),
-                   column(width = 12,
-                          leafletOutput("fastest.run.map") %>% 
-                            withSpinner(color="#0dc5c1")
-                   )
-                 ),
-                 fluidRow(
-                   column(width = 12,
-                          leafletOutput("slowest.run.map") %>% 
-                            withSpinner(color="#0dc5c1")
+                   fluidRow(
+                     column(width = 12,
+                            leafletOutput("slowest.run.map") %>% 
+                              withSpinner(color="#0dc5c1")
+                     ),
+                     column(width = 4,
+                            h2("Slowest Run"),
+                            htmlOutput("slowest.run")
+                     )
                    ),
-                   column(width = 4,
-                          h2("Slowest Run"),
-                          htmlOutput("slowest.run")
-                   )
-                 ),
-                 fluidRow(
-                   column(width = 4,
-                          h2("Highest Elevation Gain"),
-                          htmlOutput("elevated.run")
-                   ),
-                   column(width = 12,
-                          leafletOutput("elevated.run.map") %>% 
-                            withSpinner(color="#0dc5c1")
-                   )
-                 ))
-    ))
+                   fluidRow(
+                     column(width = 4,
+                            h2("Highest Elevation Gain"),
+                            htmlOutput("elevated.run")
+                     ),
+                     column(width = 12,
+                            leafletOutput("elevated.run.map") %>% 
+                              withSpinner(color="#0dc5c1")
+                     )
+                   ))
+        )
+      )
+    )
+  )
 }
 
 server <- function(input, output, session) {
@@ -287,7 +306,11 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$go.runs, {
-    updateTabsetPanel(session = session, inputId = "tabs", selected = "runs")
+    updateTabsetPanel(session = session, inputId = "tabs", selected = "run")
+  })
+  
+  observeEvent(input$tabswitcher, {
+    updateTabsetPanel(session = session, inputId = "tabs", selected = paste0(input$tabswitcher))
   })
   
   # Filter data for the selected run
