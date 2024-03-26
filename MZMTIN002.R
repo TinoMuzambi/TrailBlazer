@@ -138,6 +138,10 @@ form.well {
 form.well input[type=radio] {
   visibility: hidden;
 }
+
+h3 {
+  margin-top: 0 !important;
+}
 "
           )
         ),
@@ -215,7 +219,10 @@ form.well input[type=radio] {
           tabPanelBody("run",
                        fluidPage(
                          fluidRow(  # Wrap elements in fluidRow
-                           column(width = 16, 
+                           column(width = 16,
+                                  tags$div(
+                                    style = "margin-block: 2rem;"
+                                  ),
                                   selectInput("run.selector", label = "Select Run:", choices = run.list, selected = 1),
                                   tags$div(
                                     style = "margin-block: 1rem;"
@@ -245,56 +252,96 @@ form.well input[type=radio] {
           tabPanelBody("featured",
                        fluidPage(
                          titlePanel("Featured Runs"),
-                         fluidRow(
-                           column(width = 4,
-                                  h2("Longest Run"),
-                                  htmlOutput("longest.run")
+                         tags$div(
+                           style = "display: flex; gap: 1rem",
+                           # Second element
+                           tags$div(
+                             style = "flex: 1;",
+                             h3("Longest Run"),
+                             htmlOutput("longest.run")
                            ),
-                           column(width = 12,
-                                  leafletOutput("longest.run.map") %>% 
-                                    withSpinner(color="#0dc5c1")
-                           )
+                           # Third element
+                           tags$div(
+                             style = "flex: 4;",
+                             leafletOutput("longest.run.map") %>% 
+                               withSpinner(color="#0dc5c1"),
+                             tags$div(
+                               style = "margin-block: 2rem;"
+                             )
+                           ),
                          ),
-                         fluidRow(
-                           column(width = 12,
-                                  leafletOutput("shortest.run.map") %>% 
-                                    withSpinner(color="#0dc5c1")
+                         tags$div(
+                           style = "display: flex; gap: 1rem",
+                           # Second element
+                           tags$div(
+                             style = "flex: 4;",
+                             leafletOutput("shortest.run.map") %>% 
+                               withSpinner(color="#0dc5c1"),
+                             tags$div(
+                               style = "margin-block: 2rem;"
+                             )
                            ),
-                           column(width = 4,
-                                  h2("Shortest Run"),
-                                  htmlOutput("shortest.run")
-                           )
+                           # Third element
+                           tags$div(
+                             style = "flex: 1;",
+                             h3("Shortest Run"),
+                             htmlOutput("shortest.run")
+                           ),
                          ),
-                         fluidRow(
-                           column(width = 4,
-                                  h2("Fastest Run"),
-                                  htmlOutput("fastest.run")
+                         tags$div(
+                           style = "display: flex; gap: 1rem",
+                           # Second element
+                           tags$div(
+                             style = "flex: 1;",
+                             h3("Fastest Run"),
+                             htmlOutput("fastest.run")
                            ),
-                           column(width = 12,
-                                  leafletOutput("fastest.run.map") %>% 
-                                    withSpinner(color="#0dc5c1")
-                           )
+                           # Third element
+                           tags$div(
+                             style = "flex: 4;",
+                             leafletOutput("fastest.run.map") %>% 
+                               withSpinner(color="#0dc5c1"),
+                             tags$div(
+                               style = "margin-block: 2rem;"
+                             )
+                           ),
                          ),
-                         fluidRow(
-                           column(width = 12,
-                                  leafletOutput("slowest.run.map") %>% 
-                                    withSpinner(color="#0dc5c1")
+                         tags$div(
+                           style = "display: flex; gap: 1rem",
+                           # Second element
+                           tags$div(
+                             style = "flex: 4;",
+                             leafletOutput("slowest.run.map") %>% 
+                               withSpinner(color="#0dc5c1"),
+                             tags$div(
+                               style = "margin-block: 2rem;"
+                             )
                            ),
-                           column(width = 4,
-                                  h2("Slowest Run"),
-                                  htmlOutput("slowest.run")
-                           )
+                           # Third element
+                           tags$div(
+                             style = "flex: 1;",
+                             h3("Slowest Run"),
+                             htmlOutput("slowest.run")
+                           ),
                          ),
-                         fluidRow(
-                           column(width = 4,
-                                  h2("Highest Elevation Gain"),
-                                  htmlOutput("elevated.run")
+                         tags$div(
+                           style = "display: flex; gap: 1rem",
+                           # Second element
+                           tags$div(
+                             style = "flex: 1;",
+                             h3("Highest Elevation Gain"),
+                             htmlOutput("elevated.run")
                            ),
-                           column(width = 12,
-                                  leafletOutput("elevated.run.map") %>% 
-                                    withSpinner(color="#0dc5c1")
-                           )
-                         )
+                           # Third element
+                           tags$div(
+                             style = "flex: 4;",
+                             leafletOutput("elevated.run.map") %>% 
+                               withSpinner(color="#0dc5c1"),
+                             tags$div(
+                               style = "margin-block: 2rem;"
+                             )
+                           ),
+                         ),
                        )
           )
         )
