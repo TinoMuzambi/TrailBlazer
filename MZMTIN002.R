@@ -379,7 +379,12 @@ h3 {
                                   
                                   # Output line chart for elevation over run.
                                   plotlyOutput("elevation.chart", height = "200px") %>% 
-                                    withSpinner(color="limegreen")
+                                    withSpinner(color="limegreen"),
+                                  
+                                  # Spacer.
+                                  div(
+                                    style = "margin-block: 1rem;"
+                                  ),
                            )
                          )
                        )
