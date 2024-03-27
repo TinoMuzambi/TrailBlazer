@@ -45,7 +45,17 @@ ui <- function(req) {
         # Use radio buttons as navigation buttons.
         radioButtons(inputId = "tabswitcher", 
                      label = "TrailBlazer",
-                     choiceNames = list("Home", "Run", "Featured"),
+                     choiceNames = list("Home", 
+                                        tags$div(
+                                          tags$p("Run",
+                                                 style = "margin: 0;"),
+                                        # Select input for filtering to a specific run.
+                                        selectInput("run.selector", 
+                                                    label = "Select Run:",
+                                                    choices = run.list, 
+                                                    selected = 1),
+                                        ),
+                                        "Featured"),
                      choiceValues = list("home", "run", "featured"),
                      selected = "home"),
       ),
@@ -142,8 +152,16 @@ h3 {
   margin-top: 0 !important;
 }
 
-#tabswitcher {
-  font-size: 3rem;
+#tabswitcher, #tabswitcher-label {
+  font-size: 3rem !important;
+}
+
+.radio label {
+  padding-left: 0 !important;
+}
+
+.shiny-input-container .control-label, .shiny-input-container .shiny-input-select {
+  font-size: 1rem !important;
 }
 "
           ),
@@ -269,12 +287,6 @@ h3 {
                                   tags$div(
                                     style = "margin-block: 2rem;"
                                   ),
-                                  
-                                  # Select input for filtering to a specific run.
-                                  selectInput("run.selector", 
-                                              label = "Select Run:", 
-                                              choices = run.list, 
-                                              selected = 1),
                                   
                                   # Spacer.
                                   tags$div(
