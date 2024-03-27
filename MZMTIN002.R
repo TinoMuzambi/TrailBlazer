@@ -279,6 +279,8 @@ h3 {
                                     style = "margin-block: 1rem;"
                                   ),
                                   
+                                  h2("Runs Table"),
+                                  
                                   # Output datatable for all runs.
                                   dataTableOutput("runs.table") %>% 
                                     withSpinner(color="limegreen")
