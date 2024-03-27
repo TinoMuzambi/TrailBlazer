@@ -7,6 +7,8 @@ library(shinycssloaders)
 library(viridis)
 library(leaflet.extras)
 library(DT)
+library(shinyjs)
+library(geosphere)
 
 # Read in data.
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
@@ -173,21 +175,25 @@ h3 {
           type = "hidden",
           # Home tab.
           tabPanelBody("home",
+                       useShinyjs(),
                        fluidPage(
-                         # Use display flex to center items.
-                         tags$div(
-                           style = "display: flex; flex-direction: column; gap: 1rem; justify-content: center; align-items: center;",
-                           
-                           tags$h1(
-                             style = "font-size: 12rem; text-align: center;",
-                            "Welcome to TrailBlazer"  
-                           ),
-                           
-                           tags$img(
-                             style = "width: 45rem; margin-block: 2rem;",
-                             src = "runners.png",
-                             alt = "Runners"
-                           )
+                         div(
+                           id = "first-visit-only",
+                           # Use display flex to center items.
+                           tags$div(
+                             style = "display: flex; flex-direction: column; gap: 1rem; justify-content: center; align-items: center;",
+                             
+                             tags$h1(
+                               style = "font-size: 12rem; text-align: center;",
+                               "Welcome to TrailBlazer"  
+                             ),
+                             
+                             tags$img(
+                               style = "width: 45rem; margin-block: 2rem;",
+                               src = "runners.png",
+                               alt = "Runners"
+                             )
+                         ),
                          ),
                          
                          # Use display flex to place items next to each other.
@@ -483,6 +489,19 @@ server <- function(input, output, session) {
   # Handler for using radio buttons to switch tabs.
   observeEvent(input$tabswitcher, {
     updateTabsetPanel(session = session, inputId = "tabs", selected = paste0(input$tabswitcher))
+  })
+  
+  welcome.visited <- reactiveVal(FALSE)
+  
+  observeEvent(input$tabs, {
+    if (input$tabs == "home" && !welcome.visited()) {
+      # Show the section on the first visit
+      showElement("first-visit-only")
+      welcome.visited(TRUE) # Mark the tab as visited
+    } else if (input$tabs == "home" && welcome.visited()) {
+      # Hide the section on subsequent visits
+      hideElement("first-visit-only")
+    }
   })
   
   # Filter full data for the selected run.
