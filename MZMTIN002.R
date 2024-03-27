@@ -38,6 +38,7 @@ run.list <- dat %>%
 
 ui <- function(req) {
   fluidPage(
+    title = "Trailblazer",
     sidebarLayout(
       sidebarPanel(
         width = 1,
@@ -141,7 +142,8 @@ h3 {
   margin-top: 0 !important;
 }
 "
-          )
+          ),
+          tags$link(rel = "shortcut icon", href = "logo.png", type = "image/png")
         ),
         # Use hidden tabsetPanel controlled by radio buttons for different app tabs.
         tabsetPanel(
