@@ -41,7 +41,7 @@ ui <- function(req) {
     title = "Trailblazer",
     sidebarLayout(
       sidebarPanel(
-        width = 1,
+        width = 2,
         # Use radio buttons as navigation buttons.
         radioButtons(inputId = "tabswitcher", 
                      label = "TrailBlazer",
@@ -50,7 +50,7 @@ ui <- function(req) {
                      selected = "home"),
       ),
       mainPanel(
-        width = 11,
+        width = 10,
         # Custom CSS styles.
         tags$head(
           tags$style(
@@ -140,6 +140,10 @@ form.well input[type=radio] {
 
 h3 {
   margin-top: 0 !important;
+}
+
+#tabswitcher {
+  font-size: 3rem;
 }
 "
           ),
