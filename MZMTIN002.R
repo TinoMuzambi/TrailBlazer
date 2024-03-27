@@ -511,6 +511,12 @@ h3 {
                            ),
                          ),
                        )
+          ),
+          ############## FEATURED TAB ###############
+          tabPanelBody("about",
+                       fluidPage(
+                         htmlOutput("about.content")
+                       )
           )
         )
       )
@@ -1095,6 +1101,106 @@ server <- function(input, output, session) {
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
       addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
                 title = "Elevation (m)", opacity = 1)
+  })
+  
+  ############## SERVER - ABOUT TAB ###############
+  
+  output$about.content <- renderUI({
+    HTML("<h1>TrailBlazer Documentation</h1>
+		<h2>About</h2>
+		<p>
+			TrailBlazer is a Shiny web application designed to help you track your
+			runs and analyse various metrics from your runs. The goal of TrailBlazer
+			is to be a hub for all your running data, enabling you to improve your
+			runs and reach your goals.
+		</p>
+		<h2>App Structure</h2>
+		<p>
+			The app has a simple functional structure which consists of a sidebar
+			navigation pane on the left and the main content pane on the right. The
+			sidebar is visible at the top of each page and serves as the means of
+			navigating around the app. There are four links in the sidebar, Home, Run,
+			Featured and About which take you to the respective pages of the app.
+			These will now be delved into further.
+		</p>
+		<p>
+			The app supports URL bookmarks which means that when you refresh the page,
+			you will be brought back to the page you were on, with any inputs you'd
+			selected retained. This makes for a better user experience as well as easy
+			sharing of links as the state of the app is stored in the URL.
+		</p>
+		<h2>Home Page</h2>
+		<p>
+			On the initial load of every session of the app, you are greeted by a
+			beautiful splash screen welcoming you to TrailBlazer. This splash screen
+			will disappear upon navigating other tabs and back to the home page but
+			will reappear each time you open the app in a new session.
+		</p>
+		<p>
+			Further down on the home page is the beginning of the run data. You are
+			first presented by your run statistics for all the runs recorded. You see
+			the total number of runs, the total distance ran, the total time spent
+			running, your overall average pace and your overall average speed.
+		</p>
+		<p>
+			You then see two line charts. The chart on the left shows your pace over
+			all your runs with a horizontal line showing the average pace. Similarly
+			the chart on the right shows your speed over all your runs with a
+			horizontal line showing the average speed. These charts are interactive
+			and allow you to hover over them to see actual values for the various
+			runs. You also have the ability to zoom in on certain sections of the
+			chart (double click to reset back to the full view).
+		</p>
+		<p>
+			Underneath the charts you will then see cards similar to the top but
+			specifically showing data for the five most recent runs. This allows you
+			to see how you're progressing by comparing your most recent runs
+			statistics to your all-time runs statistics.
+		</p>
+		<p>
+			Finally at the bottom of the page is a simple table which shows the raw
+			data for each of the runs recorded. This table allows sorting by any
+			column allowing you to quickly find certain runs. For example, your most
+			recent run can quickly be found by sorting the Date column in descending
+			order.
+		</p>
+		<h2>Run Page</h2>
+		<p>
+			The run page allows you to delve into more detail on one specific run. The
+			run that is selected is determined by the select input underneath the Run
+			link in the sidebar. From the select input you can select any of the
+			recorded runs and the data for that particular run will be shown in the
+			main panel on the right.
+		</p>
+		<p>
+			The run page consists of an interactive map that shows the actual path of
+			the run. The start and end points of the run are indicated with icons
+			representing the respective states and the path is coloured according to
+			the elevation at that point. A legend for the elevation is shown on the
+			bottom right side of the map.
+		</p>
+		<p>
+			Beneath the map, you can see key metrics of the run including the
+			distance, time, date, average pace and average speed of the run.
+		</p>
+		<p>
+			Beneath the key metrics is a chart showing the elevation experienced
+			throughout the run.
+		</p>
+		<h2>Featured Page</h2>
+		<p>
+			The featured page is the home of all noteworthy runs. This page collates
+			specific runs and shows a brief statistic card about the run as well as an
+			interactive map of the run. Clicking on the statistic card will take you
+			to the run page and select that run for you to be able to see more details
+			about that run. The noteworthy runs listed here are the longest, shortest,
+			fastest, slowest (by average pace) and highest elevation gain runs.
+		</p>
+		<h2>About Page</h2>
+		<p>
+			The about page shows what TrailBlazer is about and gives you a refresher
+			on how to use the app.
+		</p>")
   })
 }
 
