@@ -81,8 +81,9 @@ ui <- function(req) {
                                                     choices = run.list, 
                                                     selected = 1),
                                         ),
-                                        "Featured"),
-                     choiceValues = list("home", "run", "featured"),
+                                        "Featured",
+                                        "About"),
+                     choiceValues = list("home", "run", "featured", "about"),
                      selected = "home"),
       ),
       ############## UI MAIN PANEL ###############
@@ -250,6 +251,11 @@ h3 {
                            div(
                              htmlOutput("average.pace")
                            ),
+                           
+                           # Output card for average speed across runs.
+                           div(
+                             htmlOutput("average.speed")
+                           ),
                          ),
                          
                          # Spacer.
@@ -299,6 +305,11 @@ h3 {
                            div(
                              htmlOutput("average.pace.last.five")
                            ),
+                           
+                           # Output card for average speed over last five runs.
+                           div(
+                             htmlOutput("average.speed.last.five")
+                           )
                          ),
                          
                          fluidRow(
@@ -619,11 +630,21 @@ server <- function(input, output, session) {
     )
   })
   
+  # Render card for average speed.
+  output$average.speed <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(mean(run.stats$speed), 2),
+             ' km/h</span><p>average speed</p></div>')
+    )
+  })
+  
   # Render line chart for pace.
   output$pace.chart <- renderPlotly({
     run.stats %>% 
       ggplot(aes(date, pace)) +
       geom_line(color = "limegreen") +
+      geom_hline(yintercept = mean(run.stats$pace), alpha = 0.5, color = "white", size = 1) + 
       labs(x = "Date", y = "Pace (\"/km)", title = "Pace over Runs") +
       theme(
         plot.background = element_rect(fill = "#161616"),
@@ -642,6 +663,7 @@ server <- function(input, output, session) {
     run.stats %>% 
       ggplot(aes(date, speed)) +
       geom_line(color = "limegreen") +
+      geom_hline(yintercept = mean(run.stats$speed), alpha = 0.5, color = "white", size = 1) + 
       labs(x = "Date", y = "Speed (km/h)", title = "Speed over Runs") +
       theme(
         plot.background = element_rect(fill = "#161616"),
@@ -684,6 +706,15 @@ server <- function(input, output, session) {
       paste0("<div class='info-card'><span class='bold'>",
              round(mean(last.five.runs$pace), 2),
              ' "/km</span><p>average pace</p></div>')
+    )
+  })
+  
+  # Render card for average speed for last five runs.
+  output$average.speed.last.five <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(mean(last.five.runs$speed), 2),
+             ' km/h</span><p>average speed</p></div>')
     )
   })
   
