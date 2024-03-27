@@ -464,6 +464,8 @@ h3 {
 }
 
 server <- function(input, output, session) {
+  ############## CONSTANTS & SET UP ###############
+  
   # Exclude inputs from being bookmarked in the URL.
   setBookmarkExclude(c("runs.table_rows_selected", "runs.table_columns_selected", "runs.table_cells_selected", "runs.table_rows_current", "runs.table_rows_all", "runs.table_state", "runs.table_search", "runs.table_cell_clicked", ".clientValue-default-plotlyCrosstalkOpts", "plotly_afterplot-A", "run.map_bounds", "run.map_center", "run.map_zoom", "plotly_relayout-A", "plotly_hover-A", "longest.run.map_bounds", "longest.run.map_center", "longest.run.map_zoom", "shortest.run.map_bounds", "shortest.run.map_center", "shortest.run.map_zoom","fastest.run.map_bounds", "fastest.run.map_center", "fastest.run.map_zoom","slowest.run.map_bounds", "slowest.run.map_center", "slowest.run.map_zoom","elevated.run.map_bounds", "elevated.run.map_center", "elevated.run.map_zoom", "longest.run.map_shape_mouseover", "shortest.run.map_shape_mouseover", "fastest.run.map_shape_mouseover", "slowest.run.map_shape_mouseover", "elevated.run.map_shape_mouseover", "longest.run.map_shape_mouseout", "shortest.run.map_shape_mouseout", "fastest.run.map_shape_mouseout", "slowest.run.map_shape_mouseout", "elevated.run.map_shape_mouseout", "longest.run.map_shape_mouseout", "shortest.run.map_shape_mouseout", "fastest.run.map_shape_mouseout", "slowest.run.map_shape_mouseout", "elevated.run.map_shape_mouseout", "longest.run.map_shape_marker_mouseover", "shortest.run.map_shape_marker_mouseover", "fastest.run.map_shape_marker_mouseover", "slowest.run.map_shape_marker_mouseover", "elevated.run.map_shape_marker_mouseover", "longest.run.map_shape_marker_mouseout", "shortest.run.map_shape_marker_mouseout", "fastest.run.map_shape_marker_mouseout", "slowest.run.map_shape_marker_mouseout", "elevated.run.map_shape_marker_mouseout"))
   
@@ -527,99 +529,7 @@ server <- function(input, output, session) {
     iconAnchorX = 16, iconAnchorY = 32
   )
   
-  # Render Leaflet map for selected run.
-  output$run.map <- renderLeaflet({
-    lat <- run.data.filtered()$lat
-    lng <- run.data.filtered()$lng
-    elevation <- run.data.filtered()$elevation
-    
-    # Create a color vector based on elevation using the viridis color scale.
-    pal <- viridis(n = 7, option = "viridis")
-    # Match colors to elevation values.
-    colors <- pal[order(elevation)]  
-    
-    # Create the legend.
-    elevation.pal <- colorBin(
-      palette = pal,
-      domain = range(dat$elevation),
-      bins = 7,
-      pretty = TRUE
-    )
-    
-    # Create the Leaflet map.
-    leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
-      addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = run.data.filtered(), color = colors) %>% # Plot run path
-      addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
-      addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
-      addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
-                title = "Elevation (m)", opacity = 1)
-  })
-  
-  # Render card for run distance.
-  output$run.dist <- renderUI({
-    HTML(
-      paste0("<div class='info-card'><span class='bold'>",
-             round(curr.run.stats()$total.distance, 2),
-             ' km</span><p>run</p></div>')
-    )
-  })
-  
-  # Render card for run time.
-  output$run.time <- renderUI({
-    HTML(
-      paste0("<div class='info-card'><span class='bold'>",
-             format.run.time(curr.run.stats()$total.time),
-             '</span><p>running</p></div>')
-    )
-    
-  })
-  
-  # Render card for run date.
-  output$run.date <- renderUI({
-    HTML(
-      paste0("<div class='info-card'><span class='bold'>",
-             curr.run.stats()$date,
-             '</span></div>')
-    )
-  })
-  
-  # Render card for run pace.
-  output$run.pace <- renderUI({
-    HTML(
-      paste0("<div class='info-card'><span class='bold'>",
-             round(curr.run.stats()$pace, 2),
-             ' "/km</span><p>average pace</p></div>')
-    )
-  })
-  
-  # Render card for run speed.
-  output$run.speed <- renderUI({
-    HTML(
-      paste0("<div class='info-card'><span class='bold'>",
-             round(curr.run.stats()$speed, 2),
-             ' km/h</span><p>average speed</p></div>')
-    )
-  })
-  
-  # Render chart for run elevation.
-  output$elevation.chart <- renderPlotly({
-    run.data.filtered() %>% 
-      ggplot(aes(time, elevation)) +
-      geom_line(color = "limegreen") + 
-      labs(x = "Time", y = "Elevation (m)", title = "Elevation over Run") +
-      theme(
-        plot.background = element_rect(fill = "#161616"),
-        panel.background = element_rect(fill = "#161616"),
-        panel.border = element_blank(),
-        axis.text = element_text(color = "white"),
-        axis.title = element_text(color = "white"),
-        title = element_text(color = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()
-      )
-  })
+  ############## HOME PAGE ###############
   
   # Render card for total number of runs.
   output$num.runs <- renderUI({
@@ -745,6 +655,110 @@ server <- function(input, output, session) {
               rownames = F)
   })
   
+  ############## RUN PAGE ###############
+  
+  # Render Leaflet map for selected run.
+  output$run.map <- renderLeaflet({
+    lat <- run.data.filtered()$lat
+    lng <- run.data.filtered()$lng
+    elevation <- run.data.filtered()$elevation
+    
+    # Create a color vector based on elevation using the viridis color scale.
+    pal <- viridis(n = 7, option = "viridis")
+    # Match colors to elevation values.
+    colors <- pal[order(elevation)]  
+    
+    # Create the legend.
+    elevation.pal <- colorBin(
+      palette = pal,
+      domain = range(dat$elevation),
+      bins = 7,
+      pretty = TRUE
+    )
+    
+    # Create bounding box to frame map.
+    bbox <- data.frame(
+      lng = c(min(lng), max(lng)),
+      lat = c(min(lat), max(lat))
+    )
+    
+    # Create the Leaflet map.
+    leaflet() %>%
+      fitBounds(lng1 = bbox$lng[1], lat1 = bbox$lat[1], lng2 = bbox$lng[2], lat2 = bbox$lat[2]) %>%
+      addTiles() %>% # Add base map tiles
+      addPolylines(lng = lng, lat = lat, data = run.data.filtered(), color = colors) %>% # Plot run path
+      addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
+      addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
+      addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
+                title = "Elevation (m)", opacity = 1)
+  })
+  
+  # Render card for run distance.
+  output$run.dist <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(curr.run.stats()$total.distance, 2),
+             ' km</span><p>run</p></div>')
+    )
+  })
+  
+  # Render card for run time.
+  output$run.time <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             format.run.time(curr.run.stats()$total.time),
+             '</span><p>running</p></div>')
+    )
+    
+  })
+  
+  # Render card for run date.
+  output$run.date <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             curr.run.stats()$date,
+             '</span></div>')
+    )
+  })
+  
+  # Render card for run pace.
+  output$run.pace <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(curr.run.stats()$pace, 2),
+             ' "/km</span><p>average pace</p></div>')
+    )
+  })
+  
+  # Render card for run speed.
+  output$run.speed <- renderUI({
+    HTML(
+      paste0("<div class='info-card'><span class='bold'>",
+             round(curr.run.stats()$speed, 2),
+             ' km/h</span><p>average speed</p></div>')
+    )
+  })
+  
+  # Render chart for run elevation.
+  output$elevation.chart <- renderPlotly({
+    run.data.filtered() %>% 
+      ggplot(aes(time, elevation)) +
+      geom_line(color = "limegreen") + 
+      labs(x = "Time", y = "Elevation (m)", title = "Elevation over Run") +
+      theme(
+        plot.background = element_rect(fill = "#161616"),
+        panel.background = element_rect(fill = "#161616"),
+        panel.border = element_blank(),
+        axis.text = element_text(color = "white"),
+        axis.title = element_text(color = "white"),
+        title = element_text(color = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+      )
+  })
+  
+  ############## FEATURED PAGE ###############
+  
   # Get longest run from summary runs.
   longest.run.sum <- run.stats %>% 
     arrange(desc(total.distance)) %>% 
@@ -778,11 +792,17 @@ server <- function(input, output, session) {
       pretty = TRUE
     )
     
+    # Create bounding box to frame map.
+    bbox <- data.frame(
+      lng = c(min(lng), max(lng)),
+      lat = c(min(lat), max(lat))
+    )
+    
     # Create the Leaflet map
     leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
+      fitBounds(lng1 = bbox$lng[1], lat1 = bbox$lat[1], lng2 = bbox$lng[2], lat2 = bbox$lat[2]) %>%
       addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = longest.run, color = "limegreen") %>% # Plot run path
+      addPolylines(lng = lng, lat = lat, data = longest.run, color = colors) %>% # Plot run path
       addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
       addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
@@ -822,11 +842,17 @@ server <- function(input, output, session) {
       pretty = TRUE
     )
     
+    # Create bounding box to frame map.
+    bbox <- data.frame(
+      lng = c(min(lng), max(lng)),
+      lat = c(min(lat), max(lat))
+    )
+    
     # Create the Leaflet map
     leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
+      fitBounds(lng1 = bbox$lng[1], lat1 = bbox$lat[1], lng2 = bbox$lng[2], lat2 = bbox$lat[2]) %>%
       addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = shortest.run, color = "limegreen") %>% # Plot run path
+      addPolylines(lng = lng, lat = lat, data = shortest.run, color = colors) %>% # Plot run path
       addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
       addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
@@ -866,11 +892,17 @@ server <- function(input, output, session) {
       pretty = TRUE
     )
     
+    # Create bounding box to frame map.
+    bbox <- data.frame(
+      lng = c(min(lng), max(lng)),
+      lat = c(min(lat), max(lat))
+    )
+    
     # Create the Leaflet map
     leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
+      fitBounds(lng1 = bbox$lng[1], lat1 = bbox$lat[1], lng2 = bbox$lng[2], lat2 = bbox$lat[2]) %>%
       addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = fastest.run, color = "limegreen") %>% # Plot run path
+      addPolylines(lng = lng, lat = lat, data = fastest.run, color = colors) %>% # Plot run path
       addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
       addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
@@ -910,11 +942,17 @@ server <- function(input, output, session) {
       pretty = TRUE
     )
     
+    # Create bounding box to frame map.
+    bbox <- data.frame(
+      lng = c(min(lng), max(lng)),
+      lat = c(min(lat), max(lat))
+    )
+    
     # Create the Leaflet map
     leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
+      fitBounds(lng1 = bbox$lng[1], lat1 = bbox$lat[1], lng2 = bbox$lng[2], lat2 = bbox$lat[2]) %>%
       addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = slowest.run, color = "limegreen") %>% # Plot run path
+      addPolylines(lng = lng, lat = lat, data = slowest.run, color = colors) %>% # Plot run path
       addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
       addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
@@ -954,11 +992,17 @@ server <- function(input, output, session) {
       pretty = TRUE
     )
     
+    # Create bounding box to frame map.
+    bbox <- data.frame(
+      lng = c(min(lng), max(lng)),
+      lat = c(min(lat), max(lat))
+    )
+    
     # Create the Leaflet map
     leaflet() %>%
-      setView(lng = mean(lng), lat = mean(lat), zoom = 13) %>%
+      fitBounds(lng1 = bbox$lng[1], lat1 = bbox$lat[1], lng2 = bbox$lng[2], lat2 = bbox$lat[2]) %>%
       addTiles() %>% # Add base map tiles
-      addPolylines(lng = lng, lat = lat, data = elevated.run, color = "limegreen") %>% # Plot run path
+      addPolylines(lng = lng, lat = lat, data = elevated.run, color = colors) %>% # Plot run path
       addMarkers(lng = lng[1], lat = lat[1], icon = start.icon) %>% 
       addMarkers(lng = lng[length(lng)], lat = lat[length(lat)], icon = finish.icon) %>% 
       addLegend(position = "bottomright", pal = elevation.pal, values = range(elevation),
