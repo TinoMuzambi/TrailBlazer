@@ -1,3 +1,22 @@
+# ---
+# title: "STA5092Z Assignment 3"
+# author: "Tino Muzambi"
+# ---
+
+############## LIBRARIES ###############
+# Uncomment to install if you don't already have these packages installed.
+# install.packages("shiny")
+# install.packages("tidyverse")
+# install.packages("leaflet")
+# install.packages("plotly")
+# install.packages("semantic.dashboard")
+# install.packages("shinycssloaders")
+# install.packages("viridis")
+# install.packages("leaflet.extras")
+# install.packages("DT")
+# install.packages("shinyjs")
+# install.packages("geosphere")
+
 library(shiny)
 library(tidyverse)
 library(leaflet)
@@ -9,6 +28,8 @@ library(leaflet.extras)
 library(DT)
 library(shinyjs)
 library(geosphere)
+
+############## UI CONSTANTS & SETUP ###############
 
 # Read in data.
 dat <- list.files("data/", "*.csv", full.names = T) %>% 
@@ -38,10 +59,13 @@ run.list <- dat %>%
   distinct(run, .keep_all = TRUE) %>%
   pull(run)
 
+############## UI ###############
+
 ui <- function(req) {
   fluidPage(
-    title = "Trailblazer",
+    title = "TrailBlazer",
     sidebarLayout(
+      ############## UI SIDEBAR ###############
       sidebarPanel(
         width = 2,
         # Use radio buttons as navigation buttons.
@@ -61,6 +85,7 @@ ui <- function(req) {
                      choiceValues = list("home", "run", "featured"),
                      selected = "home"),
       ),
+      ############## UI MAIN PANEL ###############
       mainPanel(
         width = 10,
         # Custom CSS styles.
@@ -165,6 +190,10 @@ h3 {
 .shiny-input-container .control-label, .shiny-input-container .shiny-input-select {
   font-size: 1rem !important;
 }
+
+#tabswitcher-label {
+  color: limegreen;
+}
 "
           ),
           tags$link(rel = "shortcut icon", href = "logo.png", type = "image/png")
@@ -173,7 +202,7 @@ h3 {
         tabsetPanel(
           id = "tabs",
           type = "hidden",
-          # Home tab.
+          ############## HOME TAB ###############
           tabPanelBody("home",
                        useShinyjs(),
                        fluidPage(
@@ -288,7 +317,7 @@ h3 {
                          )
                        )
           ),
-          # Run tab.
+          ############## RUN TAB ###############
           tabPanelBody("run",
                        fluidPage(
                          fluidRow(
@@ -344,7 +373,7 @@ h3 {
                          )
                        )
           ),
-          # Featured tab.
+          ############## FEATURED TAB ###############
           tabPanelBody("featured",
                        fluidPage(
                          titlePanel("Featured Runs"),
@@ -474,7 +503,7 @@ h3 {
 }
 
 server <- function(input, output, session) {
-  ############## CONSTANTS & SET UP ###############
+  ############## SERVER CONSTANTS & SET UP ###############
   
   # Exclude inputs from being bookmarked in the URL.
   setBookmarkExclude(c("runs.table_rows_selected", "runs.table_columns_selected", "runs.table_cells_selected", "runs.table_rows_current", "runs.table_rows_all", "runs.table_state", "runs.table_search", "runs.table_cell_clicked", ".clientValue-default-plotlyCrosstalkOpts", "plotly_afterplot-A", "run.map_bounds", "run.map_center", "run.map_zoom", "plotly_relayout-A", "plotly_hover-A", "longest.run.map_bounds", "longest.run.map_center", "longest.run.map_zoom", "shortest.run.map_bounds", "shortest.run.map_center", "shortest.run.map_zoom","fastest.run.map_bounds", "fastest.run.map_center", "fastest.run.map_zoom","slowest.run.map_bounds", "slowest.run.map_center", "slowest.run.map_zoom","elevated.run.map_bounds", "elevated.run.map_center", "elevated.run.map_zoom", "longest.run.map_shape_mouseover", "shortest.run.map_shape_mouseover", "fastest.run.map_shape_mouseover", "slowest.run.map_shape_mouseover", "elevated.run.map_shape_mouseover", "longest.run.map_shape_mouseout", "shortest.run.map_shape_mouseout", "fastest.run.map_shape_mouseout", "slowest.run.map_shape_mouseout", "elevated.run.map_shape_mouseout", "longest.run.map_shape_mouseout", "shortest.run.map_shape_mouseout", "fastest.run.map_shape_mouseout", "slowest.run.map_shape_mouseout", "elevated.run.map_shape_mouseout", "longest.run.map_shape_marker_mouseover", "shortest.run.map_shape_marker_mouseover", "fastest.run.map_shape_marker_mouseover", "slowest.run.map_shape_marker_mouseover", "elevated.run.map_shape_marker_mouseover", "longest.run.map_shape_marker_mouseout", "shortest.run.map_shape_marker_mouseout", "fastest.run.map_shape_marker_mouseout", "slowest.run.map_shape_marker_mouseout", "elevated.run.map_shape_marker_mouseout"))
@@ -552,7 +581,7 @@ server <- function(input, output, session) {
     iconAnchorX = 16, iconAnchorY = 32
   )
   
-  ############## HOME PAGE ###############
+  ############## SERVER - HOME TAB ###############
   
   # Render card for total number of runs.
   output$num.runs <- renderUI({
@@ -678,7 +707,7 @@ server <- function(input, output, session) {
               rownames = F)
   })
   
-  ############## RUN PAGE ###############
+  ############## SERVER - RUN TAB ###############
   
   # Render Leaflet map for selected run.
   output$run.map <- renderLeaflet({
@@ -780,7 +809,7 @@ server <- function(input, output, session) {
       )
   })
   
-  ############## FEATURED PAGE ###############
+  ############## SERVER - FEATURED TAB ###############
   
   # Get longest run from summary runs.
   longest.run.sum <- run.stats %>% 
