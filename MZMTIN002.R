@@ -196,6 +196,8 @@ h3 {
                          ),
                          ),
                          
+                         h2("Lifetime Run Stats"),
+                         
                          # Use display flex to place items next to each other.
                          tags$div(
                            style = "display: flex; gap: 1rem",
@@ -736,7 +738,7 @@ server <- function(input, output, session) {
     HTML(
       paste0("<div class='info-card'><span class='bold'>",
              curr.run.stats()$date,
-             '</span></div>')
+             '</span>run date</div>')
     )
   })
   
