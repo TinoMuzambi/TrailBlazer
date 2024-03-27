@@ -655,7 +655,7 @@ server <- function(input, output, session) {
     run.stats %>% 
       ggplot(aes(date, pace)) +
       geom_line(color = "limegreen") +
-      geom_hline(yintercept = mean(run.stats$pace), alpha = 0.5, color = "white", size = 1) + 
+      geom_hline(yintercept = mean(run.stats$pace), alpha = 0.5, color = "white", linewidth = 1) + 
       labs(x = "Date", y = "Pace (\"/km)", title = "Pace over Runs") +
       theme(
         plot.background = element_rect(fill = "#161616"),
