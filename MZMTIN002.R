@@ -48,12 +48,12 @@ ui <- function(req) {
         radioButtons(inputId = "tabswitcher", 
                      label = "TrailBlazer",
                      choiceNames = list("Home", 
-                                        tags$div(
-                                          tags$p("Run",
+                                        div(
+                                          p("Run",
                                                  style = "margin: 0;"),
                                         # Select input for filtering to a specific run.
                                         selectInput("run.selector", 
-                                                    label = "Select Run:",
+                                                    label = "Selected Run:",
                                                     choices = run.list, 
                                                     selected = 1),
                                         ),
@@ -180,15 +180,15 @@ h3 {
                          div(
                            id = "first-visit-only",
                            # Use display flex to center items.
-                           tags$div(
+                           div(
                              style = "display: flex; flex-direction: column; gap: 1rem; justify-content: center; align-items: center;",
                              
-                             tags$h1(
+                             h1(
                                style = "font-size: 12rem; text-align: center;",
                                "Welcome to TrailBlazer"  
                              ),
                              
-                             tags$img(
+                             img(
                                style = "width: 45rem; margin-block: 2rem;",
                                src = "runners.png",
                                alt = "Runners"
@@ -199,47 +199,47 @@ h3 {
                          h2("Lifetime Run Stats"),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            
                            # Output card for total number of runs.
-                           tags$div(
+                           div(
                              htmlOutput("num.runs")
                            ),
                            
                            # Output card for total distance run.
-                           tags$div(
+                           div(
                              htmlOutput("total.distance")
                            ),
                            
                            # Output card for total time run.
-                           tags$div(
+                           div(
                              htmlOutput("total.time")
                            ),
                            
                            # Output card for average pace across runs.
-                           tags$div(
+                           div(
                              htmlOutput("average.pace")
                            ),
                          ),
                          
                          # Spacer.
-                         tags$div(
+                         div(
                            style = "margin-block: 1rem;"
                          ),
                          
                          # Use display grid to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: grid; gap: 1rem; grid-template-columns: 1fr 1fr;",
                            
                            # Output line chart for pace over time.
-                           tags$div(
+                           div(
                              plotlyOutput("pace.chart", height = "200px") %>% 
                                withSpinner(color="limegreen")
                            ),
                            
                            # Output line chart for speed over time.
-                           tags$div(
+                           div(
                              plotlyOutput("speed.chart", height = "200px") %>% 
                                withSpinner(color="limegreen")
                            ),
@@ -248,26 +248,26 @@ h3 {
                          h2("Last 5 Runs Stats"),
                          
                          # Spacer.
-                         tags$div(
+                         div(
                            style = "margin-block: 1rem;"
                          ),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            
                            # Output card for total distance run over last five runs.
-                           tags$div(
+                           div(
                              htmlOutput("total.distance.last.five")
                            ),
                            
                            # Output card for total time run over last five runs.
-                           tags$div(
+                           div(
                              htmlOutput("total.time.last.five")
                            ),
                            
                            # Output card for average pace over last five runs.
-                           tags$div(
+                           div(
                              htmlOutput("average.pace.last.five")
                            ),
                          ),
@@ -275,7 +275,7 @@ h3 {
                          fluidRow(
                            column(width = 16,
                                   # Spacer.
-                                  tags$div(
+                                  div(
                                     style = "margin-block: 1rem;"
                                   ),
                                   
@@ -294,12 +294,12 @@ h3 {
                          fluidRow(
                            column(width = 16,
                                   # Spacer.
-                                  tags$div(
+                                  div(
                                     style = "margin-block: 2rem;"
                                   ),
                                   
                                   # Spacer.
-                                  tags$div(
+                                  div(
                                     style = "margin-block: 1rem;"
                                   ),
                                   
@@ -308,12 +308,12 @@ h3 {
                                     withSpinner(color="limegreen"), 
                                   
                                   # Spacer.
-                                  tags$div(
+                                  div(
                                     style = "margin-block: 2rem;"
                                   ),
                                   
                                   # Use display flex to place items next to each other.
-                                  tags$div(
+                                  div(
                                     style = "display: flex; gap: 1rem",
                                     
                                     # Output card for distance ran for selected run.
@@ -333,7 +333,7 @@ h3 {
                                   ),
                                   
                                   # Spacer.
-                                  tags$div(
+                                  div(
                                     style = "margin-block: 1rem;"
                                   ),
                                   
@@ -350,44 +350,44 @@ h3 {
                          titlePanel("Featured Runs"),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            
                            # Output card for longest run.
-                           tags$div(
+                           div(
                              style = "flex: 1;",
                              h3("Longest Run"),
                              htmlOutput("longest.run")
                            ),
                            
                            # Output Leaflet map for longest run.
-                           tags$div(
+                           div(
                              style = "flex: 4;",
                              leafletOutput("longest.run.map") %>% 
                                withSpinner(color="limegreen"),
-                             tags$div(
+                             div(
                                style = "margin-block: 2rem;"
                              )
                            ),
                          ),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            # Output Leaflet map for shortest run.
-                           tags$div(
+                           div(
                              style = "flex: 4;",
                              leafletOutput("shortest.run.map") %>% 
                                withSpinner(color="limegreen"),
                              
                              # Spacer.
-                             tags$div(
+                             div(
                                style = "margin-block: 2rem;"
                              )
                            ),
                            
                            # Output card for shortest run.
-                           tags$div(
+                           div(
                              style = "flex: 1;",
                              h3("Shortest Run"),
                              htmlOutput("shortest.run")
@@ -395,47 +395,47 @@ h3 {
                          ),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            
                            # Output card for fastest run.
-                           tags$div(
+                           div(
                              style = "flex: 1;",
                              h3("Fastest Run"),
                              htmlOutput("fastest.run")
                            ),
                            
                            # Output Leaflet map for fastest run.
-                           tags$div(
+                           div(
                              style = "flex: 4;",
                              leafletOutput("fastest.run.map") %>% 
                                withSpinner(color="limegreen"),
                              
                              # Spacer.
-                             tags$div(
+                             div(
                                style = "margin-block: 2rem;"
                              )
                            ),
                          ),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            
                            # Output Leaflet map for slowest run.
-                           tags$div(
+                           div(
                              style = "flex: 4;",
                              leafletOutput("slowest.run.map") %>% 
                                withSpinner(color="limegreen"),
                              
                              # Spacer.
-                             tags$div(
+                             div(
                                style = "margin-block: 2rem;"
                              )
                            ),
                            
                            # Output card for slowest run.
-                           tags$div(
+                           div(
                              style = "flex: 1;",
                              h3("Slowest Run"),
                              htmlOutput("slowest.run")
@@ -443,24 +443,24 @@ h3 {
                          ),
                          
                          # Use display flex to place items next to each other.
-                         tags$div(
+                         div(
                            style = "display: flex; gap: 1rem",
                            
                            # Output card for highest elevation gained.
-                           tags$div(
+                           div(
                              style = "flex: 1;",
                              h3("Highest Elevation Gain"),
                              htmlOutput("elevated.run")
                            ),
                            
                            # Output Leaflet map for highest elevation gained.
-                           tags$div(
+                           div(
                              style = "flex: 4;",
                              leafletOutput("elevated.run.map") %>% 
                                withSpinner(color="limegreen"),
                              
                              # Spacer.
-                             tags$div(
+                             div(
                                style = "margin-block: 2rem;"
                              )
                            ),
