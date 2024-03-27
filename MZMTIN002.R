@@ -43,7 +43,7 @@ ui <- function(req) {
         width = 1,
         # Use radio buttons as navigation buttons.
         radioButtons(inputId = "tabswitcher", 
-                     label = "Runner",
+                     label = "TrailBlazer",
                      choiceNames = list("Home", "Run", "Featured"),
                      choiceValues = list("home", "run", "featured"),
                      selected = "home"),
@@ -150,7 +150,21 @@ h3 {
           # Home tab.
           tabPanelBody("home",
                        fluidPage(
-                         titlePanel("Lifetime Stats"),
+                         # Use display flex to center items.
+                         tags$div(
+                           style = "display: flex; flex-direction: column; gap: 1rem; justify-content: center; align-items: center;",
+                           
+                           tags$h1(
+                             style = "font-size: 12rem; text-align: center;",
+                            "Welcome to TrailBlazer"  
+                           ),
+                           
+                           tags$img(
+                             style = "width: 45rem; margin-block: 2rem;",
+                             src = "runners.png",
+                             alt = "Runners"
+                           )
+                         ),
                          
                          # Use display flex to place items next to each other.
                          tags$div(
@@ -189,13 +203,13 @@ h3 {
                            # Output line chart for pace over time.
                            tags$div(
                              plotlyOutput("pace.chart", height = "200px") %>% 
-                               withSpinner(color="#0dc5c1")
+                               withSpinner(color="limegreen")
                            ),
                            
                            # Output line chart for speed over time.
                            tags$div(
                              plotlyOutput("speed.chart", height = "200px") %>% 
-                               withSpinner(color="#0dc5c1")
+                               withSpinner(color="limegreen")
                            ),
                          ),
                          
@@ -235,7 +249,7 @@ h3 {
                                   
                                   # Output datatable for all runs.
                                   dataTableOutput("runs.table") %>% 
-                                    withSpinner(color="#0dc5c1")
+                                    withSpinner(color="limegreen")
                            )
                          )
                        )
@@ -263,7 +277,7 @@ h3 {
                                   
                                   # Output Leaflet map for selected run.
                                   leafletOutput("run.map") %>% 
-                                    withSpinner(color="#0dc5c1"), 
+                                    withSpinner(color="limegreen"), 
                                   
                                   # Spacer.
                                   tags$div(
@@ -297,7 +311,7 @@ h3 {
                                   
                                   # Output line chart for elevation over run.
                                   plotlyOutput("elevation.chart", height = "200px") %>% 
-                                    withSpinner(color="#0dc5c1")
+                                    withSpinner(color="limegreen")
                            )
                          )
                        )
@@ -322,7 +336,7 @@ h3 {
                            tags$div(
                              style = "flex: 4;",
                              leafletOutput("longest.run.map") %>% 
-                               withSpinner(color="#0dc5c1"),
+                               withSpinner(color="limegreen"),
                              tags$div(
                                style = "margin-block: 2rem;"
                              )
@@ -336,7 +350,7 @@ h3 {
                            tags$div(
                              style = "flex: 4;",
                              leafletOutput("shortest.run.map") %>% 
-                               withSpinner(color="#0dc5c1"),
+                               withSpinner(color="limegreen"),
                              
                              # Spacer.
                              tags$div(
@@ -367,7 +381,7 @@ h3 {
                            tags$div(
                              style = "flex: 4;",
                              leafletOutput("fastest.run.map") %>% 
-                               withSpinner(color="#0dc5c1"),
+                               withSpinner(color="limegreen"),
                              
                              # Spacer.
                              tags$div(
@@ -384,7 +398,7 @@ h3 {
                            tags$div(
                              style = "flex: 4;",
                              leafletOutput("slowest.run.map") %>% 
-                               withSpinner(color="#0dc5c1"),
+                               withSpinner(color="limegreen"),
                              
                              # Spacer.
                              tags$div(
@@ -415,7 +429,7 @@ h3 {
                            tags$div(
                              style = "flex: 4;",
                              leafletOutput("elevated.run.map") %>% 
-                               withSpinner(color="#0dc5c1"),
+                               withSpinner(color="limegreen"),
                              
                              # Spacer.
                              tags$div(
