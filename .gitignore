@@ -1,7 +1,8 @@
 .DS_Store
 .RData
 .Rhistory
-data
+data/*
+!data/example-runs.csv
 .Rproj.user
 *.pdf
 *.zip
