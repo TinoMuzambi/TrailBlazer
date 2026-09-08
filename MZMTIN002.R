@@ -1,7 +1,4 @@
-# ---
-# title: "STA5092Z Assignment 3"
-# author: "Tino Muzambi"
-# ---
+# TrailBlazer: an interactive running analysis dashboard.
 
 ############## LIBRARIES ###############
 # Uncomment to install if you don't already have these packages installed.
@@ -32,7 +29,12 @@ library(geosphere)
 ############## UI CONSTANTS & SETUP ###############
 
 # Read in data.
-dat <- list.files("data/", "*.csv", full.names = T) %>% 
+data.files <- list.files("data/", pattern = "\\.csv$", full.names = TRUE)
+if (length(data.files) == 0) {
+  stop("No run data found. Add at least one CSV file to data/.")
+}
+
+dat <- data.files %>%
   read_csv(., id = "run") %>% 
   # Add column for representing run and parse date & time fields into time field.
   mutate(run = dense_rank(run), time = ymd_hms(paste(date, time)))
@@ -45,7 +47,7 @@ run.stats <- dat %>%
   summarise(
     total.distance = sum(dist, na.rm = T),
     total.time = as.numeric(difftime(last(time), first(time), units = "secs")),
-    elevation.gain = sum(diff(elevation[elevation > lag(elevation, default = first(elevation))]), na.rm = T),
+    elevation.gain = sum(pmax(diff(elevation), 0), na.rm = TRUE),
     date = as.character(first(date))
   ) %>% 
   # Convert distance to km.
